@@ -347,26 +347,27 @@ describe("verifyClaims (provenance, not entailment)", () => {
 });
 
 describe("evidenceStrength", () => {
-  test("returns 1 when no passage carries an SI score", () => {
+  test("returns 1 when no passage carries a rerank score", () => {
     // The reranker is optional; with no scores confidence must not be dampened.
     expect(evidenceStrength([hit(1, "a"), hit(2, "b")])).toBe(1);
   });
 
   test("a strongly reranked set keeps confidence near full", () => {
-    const strong = [hit(1, "a", { si_score: 0.55 }), hit(2, "b", { si_score: 0.5 })];
+    // Live on-topic passages rerank around 0.55-0.62.
+    const strong = [hit(1, "a", { rerank_score: 0.62 }), hit(2, "b", { rerank_score: 0.5 })];
     expect(evidenceStrength(strong)).toBeGreaterThan(0.9);
   });
 
   test("an off-topic set is dampened to the floor", () => {
     // "best chocolate cake recipe" reranks every passage at ~0.125; confidence
-    // must fall, not sit at 0.9.
-    const weak = [hit(1, "a", { si_score: 0.125 }), hit(2, "b", { si_score: 0.125 })];
+    // must fall, not sit near the ceiling.
+    const weak = [hit(1, "a", { rerank_score: 0.125 }), hit(2, "b", { rerank_score: 0.15 })];
     expect(evidenceStrength(weak)).toBe(0.4);
   });
 
   test("stays inside [0.4, 1]", () => {
-    for (const s of [0, 0.01, 0.5, 1, 2]) {
-      const v = evidenceStrength([hit(1, "a", { si_score: s })]);
+    for (const s of [0, 0.01, 0.35, 0.5, 1, 2]) {
+      const v = evidenceStrength([hit(1, "a", { rerank_score: s })]);
       expect(v).toBeGreaterThanOrEqual(0.4);
       expect(v).toBeLessThanOrEqual(1);
     }

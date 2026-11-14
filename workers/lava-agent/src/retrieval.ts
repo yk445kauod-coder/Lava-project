@@ -1000,17 +1000,19 @@ export function claimsFromCitations(answer: string, hits: Hit[]): any[] {
  * merely sharing its words. `citationCoverage` and `verifyClaims` both measure
  * the *answer's* form (how many sentences cite, whether a quote was copied),
  * and both stay high for a fluent answer that cites a passage which does not
- * answer the question. The one signal that moves with relevance is the SI
- * rerank score: measured live, an on-topic passage reranks at ~0.55 and an
- * off-topic one at ~0.125. This maps that mean onto a [0.4, 1] multiplier so an
- * out-of-scope question ("best chocolate cake recipe") comes back dampened
- * instead of at 0.9, while an on-topic one is left alone.
+ * answer the question. The one signal that moves with relevance is the rerank
+ * score: measured live, an on-topic passage reranks at ~0.58 and an off-topic
+ * one ("best chocolate cake recipe") at ~0.13. This maps that mean onto a
+ * [0.4, 1] multiplier so an out-of-scope question comes back dampened instead
+ * of confident, while an on-topic one is left alone.
  */
 export function evidenceStrength(hits: Hit[]): number {
-  const scored = hits.map((h) => Number(h.si_score)).filter((s) => Number.isFinite(s) && s > 0);
+  const scored = hits
+    .map((h) => Number(h.si_score ?? h.rerank_score))
+    .filter((s) => Number.isFinite(s) && s > 0);
   if (!scored.length) return 1;
   const mean = scored.reduce((a, b) => a + b, 0) / scored.length;
-  const LO = 0.15; // mean rerank at or below this is treated as off-topic
+  const LO = 0.2; // mean rerank at or below this is treated as off-topic
   const HI = 0.5; // mean rerank at or above this is treated as fully on-topic
   const FLOOR = 0.4;
   const ramp = FLOOR + ((mean - LO) / (HI - LO)) * (1 - FLOOR);
