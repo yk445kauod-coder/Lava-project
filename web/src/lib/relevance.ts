@@ -40,6 +40,8 @@ export interface Environment {
   gravity: string;
   /** microgravity data transfers directly; partial-gravity needs a caveat. */
   gravityClass: "micro" | "partial";
+  /** One line on how this atmosphere differs from Earth's, when it does. */
+  contrast?: string;
   /** The fire-safety needs that matter here, and how much. Weights sum to 1. */
   needs: Partial<Record<Need, number>>;
 }
@@ -90,6 +92,7 @@ export const ENVIRONMENTS: Environment[] = [
     pressure: "4.3 psi",
     gravity: "microgravity (~1e-6 g)",
     gravityClass: "micro",
+    contrast: "Pure oxygen at a third of sea-level pressure; a small leak or hot spot ignites far more readily than on Earth.",
     needs: {
       elevated_oxygen: 0.28,
       material_flammability: 0.22,
@@ -104,6 +107,7 @@ export const ENVIRONMENTS: Environment[] = [
     pressure: "<=10.2 psi",
     gravity: "partial gravity",
     gravityClass: "partial",
+    contrast: "More than 40% higher oxygen than Earth's air, so materials that barely burn at home burn readily here.",
     needs: {
       elevated_oxygen: 0.24,
       material_flammability: 0.22,
@@ -118,6 +122,7 @@ export const ENVIRONMENTS: Environment[] = [
     pressure: "<=10.2 psi",
     gravity: "partial gravity",
     gravityClass: "partial",
+    contrast: "Same raised-oxygen atmosphere as the habitat, in a small sealed volume with little airflow.",
     needs: {
       elevated_oxygen: 0.24,
       material_flammability: 0.2,

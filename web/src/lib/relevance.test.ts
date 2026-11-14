@@ -29,6 +29,13 @@ describe("environment rubrics", () => {
     expect(env("habitat").gravityClass).toBe("partial");
     expect(env("rover").gravityClass).toBe("partial");
   });
+
+  it("states how the off-Earth atmospheres differ from Earth's air", () => {
+    expect(env("suit").contrast).toMatch(/oxygen/i);
+    expect(env("habitat").contrast).toMatch(/40%/);
+    expect(env("rover").contrast).toBeTruthy();
+    expect(env("station").contrast).toBeUndefined();
+  });
 });
 
 describe("fitFor", () => {

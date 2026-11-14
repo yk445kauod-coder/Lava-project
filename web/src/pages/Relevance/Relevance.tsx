@@ -178,6 +178,12 @@ export default function Relevance() {
           </div>
         </div>
 
+        {env.contrast && (
+          <p className="rel-contrast" style={{ margin: "0 18px 16px" }}>
+            {t(env.contrast)}
+          </p>
+        )}
+
         {env.gravityClass === "partial" && (
           <div className="rel-gap small" style={{ margin: "0 18px 16px" }}>
             <Icon name="alert" size={14} />

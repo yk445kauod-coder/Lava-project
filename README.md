@@ -26,6 +26,9 @@ Team Astro-Tech is four people:
 - Yousef M., data collection
 - Shahd, data cleaning
 
+The product is built for the audience the challenge names: professors and educators,
+graduate and undergraduate students, aerospace researchers, and aerospace engineers.
+
 ## What it does
 
 - Search that mixes keyword matching with vector similarity. The next section says why.
@@ -38,6 +41,9 @@ Team Astro-Tech is four people:
 - **Mission Relevance**: pick a habitable crew environment (spacecraft cabin, EVA
   spacesuit, lunar/Martian habitat, pressurized rover) and see which microgravity
   investigations matter most for it, ranked by a transparent, hand-checkable rubric.
+  Each environment shows its atmosphere next to how it differs from Earth's - the lunar
+  habitat and rover run more than 40% higher oxygen than Earth's air, which is why the
+  same material burns far more readily there.
   - A "named investigations" panel that separates two cases rather than blurring them: the
   challenge-named investigations that **are** in PSI (SPICE, SLICE, DAFT-2, BRE, E-FIELD,
   CFI-G, each with its PSI id) and the ones the corpus genuinely does **not** hold yet

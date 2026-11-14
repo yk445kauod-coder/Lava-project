@@ -610,6 +610,9 @@
 .console .rel-envbar>div{display:flex;flex-direction:column;gap:3px}
 .console .rel-envbar__k{font-size:12px;color:var(--muted);font-weight:600}
 .console .rel-envbar__v{font-size:14px;font-weight:700;color:var(--text)}
+.console .rel-contrast{font-size:13px;line-height:1.5;color:var(--muted);border-left:2px solid var(--flame);padding-left:11px}
+[dir=rtl] .console .rel-contrast, [dir=rtl] .console .rel-named__row{border-left:0;border-right:2px solid var(--flame);padding-left:0;padding-right:11px}
+[dir=rtl] .console .rel-named__row{border-right-color:var(--border)}
 .console .rel-rubric{padding:4px 18px 8px;display:flex;flex-direction:column;gap:8px}
 .console .rel-rubric__row{display:flex;flex-direction:column;gap:2px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 .console .rel-rubric__row:last-child{border-bottom:0}

@@ -67,6 +67,30 @@ const METHODS = [
   },
 ];
 
+/** The audience the challenge names, so a reader knows who the product is for. */
+const AUDIENCES = [
+  {
+    icon: "book",
+    who: "Professors and educators",
+    why: "A citable, checkable map of the microgravity combustion literature for lectures and reading lists.",
+  },
+  {
+    icon: "brain",
+    who: "Graduate and undergraduate students",
+    why: "A place to see what was already measured, and where the open questions are, before starting a study.",
+  },
+  {
+    icon: "telescope",
+    who: "Aerospace researchers",
+    why: "Condition-by-condition comparisons across investigations, with the gap stated instead of guessed at.",
+  },
+  {
+    icon: "cpu",
+    who: "Aerospace engineers",
+    why: "The measured inputs a flammability model needs, and the controls and equipment the work informs.",
+  },
+];
+
 /** Trust rules the team agreed on - the contract behind every number in the UI. */
 const RULES = [
   "Every number we show is a candidate, not a fact. We put the quote and the source right next to it.",
@@ -142,6 +166,30 @@ export default function About() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="sec alt" id="audience">
+          <div className="wrap">
+            <h2>{t("Who it's for")}</h2>
+            <p className="sub">
+              {t(
+                "LAVA is built for the people the challenge names: the researchers, students and engineers who work with low-gravity combustion data.",
+              )}
+            </p>
+            <div className="role-grid">
+              {AUDIENCES.map((a) => (
+                <Reveal key={a.who} className="role-card">
+                  <span className="ava" aria-hidden="true">
+                    <Icon name={a.icon} size={19} />
+                  </span>
+                  <div>
+                    <h3>{t(a.who)}</h3>
+                    <p>{t(a.why)}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
 
