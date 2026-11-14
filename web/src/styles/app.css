@@ -11,7 +11,7 @@ body{font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--t
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 :focus-visible{outline:2px solid var(--flame);outline-offset:2px}
 .mono{font-family:var(--font-mono)}
-.app{display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden}
+.app{display:grid;grid-template-columns:260px 1fr;height:100vh;height:100dvh;overflow:hidden}
 .sidebar{background:var(--side);color:var(--side-text);display:flex;flex-direction:column;gap:14px;padding:18px 14px;z-index:30;min-height:0}
 .brand{display:flex;align-items:center;gap:10px;padding:2px 4px}
 .brand b{font-size:20px;letter-spacing:0;display:block;line-height:1.1}.brand small{color:var(--side-muted);font-size:11px}
@@ -363,7 +363,7 @@ a{color:var(--accent-ink)}.card a,.find a{color:inherit}
 [dir=rtl] .field,[dir=rtl] .ctl{flex-direction:row-reverse}
 [dir=rtl] .chart-svg{direction:ltr}
 [dir=rtl] .bar-track i{float:right}
-@media(max-width:760px){[dir=rtl] .sidebar{inset-inline-start:auto;inset-inline-end:0;transform:translateX(100%)}
+@media(max-width:760px){[dir=rtl] .sidebar{left:auto;right:0;transform:translateX(100%)}
   [dir=rtl] .app.nav-open .sidebar{transform:none}
   [dir=rtl] .app{grid-template-columns:1fr}}
 

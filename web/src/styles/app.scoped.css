@@ -2,7 +2,7 @@
 .console button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .console :focus-visible{outline:2px solid var(--flame);outline-offset:2px}
 .console .mono{font-family:var(--font-mono)}
-.console .app{display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden}
+.console .app{display:grid;grid-template-columns:260px 1fr;height:100vh;height:100dvh;overflow:hidden}
 .console .sidebar{background:var(--side);color:var(--side-text);display:flex;flex-direction:column;gap:14px;padding:18px 14px;z-index:30;min-height:0}
 .console .brand{display:flex;align-items:center;gap:10px;padding:2px 4px}
 .console .brand b{font-size:20px;letter-spacing:0;display:block;line-height:1.1}
@@ -372,7 +372,7 @@
 [dir=rtl] .console .chart-svg{direction:ltr}
 [dir=rtl] .console .bar-track i{float:right}
 @media(max-width:760px){
-[dir=rtl] .console .sidebar{inset-inline-start:auto;inset-inline-end:0;transform:translateX(100%)}
+[dir=rtl] .console .sidebar{left:auto;right:0;transform:translateX(100%)}
 [dir=rtl] .console .app.nav-open .sidebar{transform:none}
 [dir=rtl] .console .app{grid-template-columns:1fr}
 }

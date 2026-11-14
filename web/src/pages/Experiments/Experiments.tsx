@@ -88,6 +88,7 @@ interface DetailResponse {
   documents?: Document[];
   findings?: Finding[];
   psi?: PsiRecord | null;
+  psi_metrics?: { total: number; metrics: { metric: string; n: number }[] };
 }
 
 /** Reduced-gravity level, e.g. "1.0e-4 g"; em dash when not reported. */
@@ -234,13 +235,19 @@ function ListView() {
   );
 }
 
-function Findings({ findings }: { findings: Finding[] }) {
+function Findings({ findings, psiTotal = 0 }: { findings: Finding[]; psiTotal?: number }) {
   const { t } = useI18n();
   const labels = useTranslated(findings.map((f) => f.metric));
   const statements = useTranslated(findings.map((f) => f.statement));
   const quotes = useTranslated(findings.map((f) => f.evidence_quote));
 
-  if (!findings.length) return <Empty icon="flask">{t("No extracted findings")}</Empty>;
+  if (!findings.length) {
+    return (
+      <Empty icon="flask">
+        {psiTotal > 0 ? t("No values mined from the report text. The PSI table below holds the measured rows.") : t("No extracted findings")}
+      </Empty>
+    );
+  }
 
   return (
     <>
@@ -297,25 +304,32 @@ function DetailView({ code }: { code: string }) {
   const psi = data?.psi ?? null;
   const aliases = x?.aliases ?? [];
 
+  // Measurements come from two independent sources: values mined from NTRS
+  // report text, and the spreadsheets NASA publishes in PSI. An experiment can
+  // have one without the other, so the coverage chart shows both and the
+  // headline counts their union rather than only the mined side.
+  const psiMetrics = data?.psi_metrics?.metrics ?? [];
+  const psiTotal = data?.psi_metrics?.total ?? 0;
+
   const [xName, xObjective, xSummary] = useTranslated([x?.name, x?.objective, x?.summary]);
   const docTitles = useTranslated(docs.map((d) => d.title));
 
   const metrics = useMemo(() => {
-    const by = new Map<string, Finding[]>();
+    const by = new Map<string, { n: number; max: number }>();
+    const add = (metric: string, n: number, max: number) => {
+      const cur = by.get(metric) ?? { n: 0, max: 0 };
+      cur.n += n;
+      cur.max = Math.max(cur.max, max);
+      by.set(metric, cur);
+    };
     findings.forEach((f) => {
-      const k = f.metric || "other";
-      const rows = by.get(k) ?? [];
-      rows.push(f);
-      by.set(k, rows);
+      add(f.metric || "other", 1, num(f.value_max ?? f.value) ?? 0);
     });
+    psiMetrics.forEach((m) => add(m.metric, m.n, 0));
     return [...by.entries()]
-      .map(([metric, rows]) => ({
-        metric,
-        n: rows.length,
-        max: Math.max(0, ...rows.map((r) => num(r.value_max ?? r.value) ?? 0)),
-      }))
+      .map(([metric, { n, max }]) => ({ metric, n, max }))
       .sort((a, b) => b.n - a.n);
-  }, [findings]);
+  }, [findings, psiMetrics]);
 
   if (loading) {
     return (
@@ -343,10 +357,16 @@ function DetailView({ code }: { code: string }) {
 
   const metricHtml = metrics.length
     ? barList(
-        metrics.map((m) => ({ label: m.metric, value: m.n, sub: t("max {n}").replace("{n}", fmt(m.max)) })),
+        metrics.map((m) => ({
+          label: m.metric,
+          value: m.n,
+          sub: m.max > 0 ? t("max {n}").replace("{n}", fmt(m.max)) : undefined,
+        })),
         { unit: t("rows") },
       )
     : null;
+
+  const totalMeasurements = findings.length + psiTotal;
 
   return (
     <>
@@ -359,7 +379,17 @@ function DetailView({ code }: { code: string }) {
 
       <div className="stat-row">
         <Stat label={t("Documents")} value={docs.length} sub={t("NTRS reports")} />
-        <Stat label={t("Findings")} value={findings.length} sub={`${fmt(metrics.length)} ${t("metrics")}`} />
+        <Stat
+          label={t("Measurements")}
+          value={totalMeasurements}
+          sub={
+            psiTotal > 0 && findings.length > 0
+              ? t("{a} mined · {b} PSI").replace("{a}", fmt(findings.length)).replace("{b}", fmt(psiTotal))
+              : psiTotal > 0
+                ? t("PSI published tables")
+                : t("mined from reports")
+          }
+        />
         <Stat label={t("Gravity")} value={grav(x.gravity_level)} sub={t("reduced gravity level")} count={false} />
         <Stat
           label={t("Pressure")}
@@ -370,13 +400,22 @@ function DetailView({ code }: { code: string }) {
       </div>
 
       <div className="two-a">
-        <Panel title={t("Findings by metric")} sub={`${fmt(findings.length)} ${t("candidate measurements")}`}>
-          <Findings findings={findings} />
+        <Panel
+          title={t("Findings by metric")}
+          sub={
+            findings.length
+              ? `${fmt(findings.length)} ${t("candidate measurements")}`
+              : psiTotal > 0
+                ? t("no values mined from reports; see the PSI table below")
+                : t("no extracted findings")
+          }
+        >
+          <Findings findings={findings} psiTotal={psiTotal} />
         </Panel>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
           <Panel title={t("Metric coverage")} sub={t("measurements per quantity")}>
-            <Chart html={metricHtml} />
+            <Chart html={metricHtml} emptyText={t("No chart available")} />
           </Panel>
 
           <Panel title={t("Conditions")}>

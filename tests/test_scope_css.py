@@ -56,3 +56,18 @@ def test_comma_list_scopes_each_part_independently():
 def test_element_level_attribute_is_still_scoped():
     # `[data-mode]` sits on a page element, not <html>, so it stays inside.
     assert scoped("[data-mode=micro] .glow") == ".console [data-mode=micro] .glow"
+
+
+def test_mobile_rtl_drawer_uses_physical_offsets_not_logical_inset():
+    """Regression: the mobile RTL drawer leaked a 110px strip of the sidebar.
+
+    `.sidebar` is 280px wide and hidden with `translateX(100%)` in RTL. The rule
+    anchored it with `inset-inline-end:0`, which resolves to `left:0` under
+    `dir=rtl`; translating +100% then left a 280-110px sliver of the navy panel
+    on screen while the drawer was closed. It must use physical `right:0` so the
+    +100% translate moves the whole 280px off the right edge.
+    """
+    css = (ROOT / "web" / "src" / "styles" / "app.css").read_text()
+    rtl_mobile_block = css.split("@media(max-width:760px){[dir=rtl] .sidebar{", 1)[1].split("}", 1)[0]
+    assert "right:0" in rtl_mobile_block
+    assert "inset-inline-end" not in css.split("[dir=rtl] .sidebar", 1)[1].split("\n", 1)[0]

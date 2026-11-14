@@ -299,7 +299,7 @@
 [dir=rtl] .console-chat .app.panel-off{grid-template-columns:1fr}
 }
 @media(max-width:900px){
-[dir=rtl] .console-chat .sidebar{position:fixed;inset-inline-start:auto;inset-inline-end:0;transform:translateX(100%);transition:transform .3s}
+[dir=rtl] .console-chat .sidebar{position:fixed;left:auto;right:0;transform:translateX(100%);transition:transform .3s}
 [dir=rtl] .console-chat .app.nav-open .sidebar{transform:none}
 }
 @media(max-width:760px){

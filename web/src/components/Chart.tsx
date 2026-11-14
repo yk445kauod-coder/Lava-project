@@ -1,4 +1,5 @@
 import { Icon } from "./Icon";
+import { useI18n } from "../lib/i18n/provider";
 
 interface ChartProps {
   /** An SVG/HTML string from `lib/chart` (or a backend-rendered SVG). */
@@ -11,7 +12,8 @@ interface ChartProps {
 
 /** Renders the output of the dependency-free chart engine. The builders escape
  *  their own labels, so the string is safe to inject. */
-export function Chart({ html, className = "chart-wrap", emptyText = "No chart available", loading = false }: ChartProps) {
+export function Chart({ html, className = "chart-wrap", emptyText, loading = false }: ChartProps) {
+  const { t } = useI18n();
   if (!html && loading) {
     return (
       <div className={className}>
@@ -24,7 +26,7 @@ export function Chart({ html, className = "chart-wrap", emptyText = "No chart av
       <div className={className}>
         <div className="empty">
           <Icon name="chart" size={26} />
-          <span>{emptyText}</span>
+          <span>{emptyText ?? t("No chart available")}</span>
         </div>
       </div>
     );

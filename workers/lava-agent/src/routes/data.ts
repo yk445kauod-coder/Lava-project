@@ -11,6 +11,7 @@ import { db } from "../db";
 import { CONF_SQL, CONF_SQL_FINDING, DERIVED_DATASET_SQL } from "../confidence";
 import { badRequest, json, notFound } from "../http";
 import { numify, numifyOne } from "../serialize";
+import { derivePsiMetrics } from "../psiMetrics";
 import {
   embedSafe, heuristicGrade, hybridSearch, keywordSearch, mergePsi, mmrDiversify, RANK_WEIGHTS,
   relevanceGate, rerank, retrieve, retrievalQuery, SI_WEIGHT, siRerank, smartRank,
@@ -257,11 +258,15 @@ export async function handleDataRoutes(request: Request, url: URL, env: Env): Pr
         WHERE ed.experiment_id = $1 ORDER BY f.metric, f.value LIMIT 200`,
       [experiment.id]) as any[];
     const psi = await psiForExperiment(sql, experiment);
+    const psiMetrics = derivePsiMetrics(
+      psi.investigations.flatMap((inv: any) => inv.tables ?? []),
+    );
     return json({
       experiment: numifyOne(experiment, ["o2_fraction", "pressure_kpa", "documents", "findings"]),
       documents: numify(documents, ["word_count", "quality_score"]),
       findings: numify(findings, ["value", "value_max", "confidence"]),
       psi,
+      psi_metrics: psiMetrics,
       // Legacy flat fields, kept so an older client keeps rendering.
       psi_summary: psi.summary,
       psi_rows: psi.investigations.flatMap((inv: any) => inv.tables.flatMap((t: any) => t.rows)),
