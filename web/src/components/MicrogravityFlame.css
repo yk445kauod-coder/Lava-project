@@ -1,0 +1,12 @@
+/* Microgravity flame, animated from shared control points. */
+.mgf{--mgf-w:360px;width:var(--mgf-w);max-width:100%;position:relative;display:inline-block;background:transparent;line-height:0}
+.mgf svg{width:100%;height:auto;display:block;overflow:visible}
+.mgf .mgf-btn{position:absolute;inset-inline-end:6%;bottom:4%;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(20,25,57,.6);backdrop-filter:blur(6px);color:#fff;cursor:pointer;padding:0;display:grid;place-items:center;transition:background .25s,transform .15s}
+.mgf .mgf-btn:hover{background:rgba(40,50,110,.8)}
+.mgf .mgf-btn:active{transform:scale(.94)}
+.mgf .mgf-btn:focus-visible{outline:3px solid #7fb2ff;outline-offset:3px}
+.mgf[data-button="off"] .mgf-btn{display:none}
+.mgf .mgf-btn svg{width:24px;height:24px}
+.mgf .mgf-ic-b{display:none}
+.mgf[data-state="micro"] .mgf-ic-a{display:none}
+.mgf[data-state="micro"] .mgf-ic-b{display:block}

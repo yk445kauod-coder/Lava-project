@@ -1,0 +1,180 @@
+# LAVA
+
+LAVA answers research questions about microgravity combustion. You ask how fire behaves
+without gravity and it replies from NASA's published work, with a citation behind each
+claim. We built it for the "Flame in Freefall" challenge at NASA Space Apps 2026, whose
+subject is spacecraft fire safety.
+
+Live at [lava-project.pages.dev](https://lava-project.pages.dev).
+
+## Overview
+
+Fires behave differently without gravity. There is no buoyant plume to carry hot gas away,
+so a flame that would rise on Earth spreads in ways that are hard to predict, and that is
+exactly the situation a crew faces in orbit. The evidence to reason about it already exists
+in decades of NASA microgravity combustion work, but it is spread across hundreds of
+reports and spreadsheets. LAVA puts that evidence in one place you can question in plain
+language, and it keeps a source behind every sentence so the answer can be checked rather
+than trusted.
+
+## Team
+
+Team Astro-Tech is four people:
+
+- Yousef, lead, backend and retrieval
+- Aynoor, frontend and UI
+- Yousef M., data collection
+- Shahd, data cleaning
+
+## What it does
+
+- Search that mixes keyword matching with vector similarity. The next section says why.
+- An agent that breaks a question into sub-questions, retrieves passages, decides whether
+  it has enough, then writes an answer where each sentence points back to the passage it
+  came from.
+- A ranking page that shows the score behind every passage instead of hiding it.
+- A comparison page for two campaigns, condition by condition.
+- Fire-safety insights the SI core writes from the retrieved evidence, each one linked to
+  the documents it came from.
+- A React dashboard over all of it, in ten languages including right-to-left Arabic.
+
+## How it works
+
+The pipeline runs in stages, and each one is a command you can run on its own:
+
+1. `collect` pulls the NTRS records and their full text.
+2. `clean` normalizes the text, drops duplicate documents and splits what is left into
+   chunks.
+3. `index` embeds every chunk and stores the vectors next to the text.
+4. `analyze` writes the fire-safety insights from the indexed evidence.
+5. `report` builds a longer write-up over the same corpus.
+
+At question time the assistant embeds the question, runs the keyword and vector searches
+together, fuses the two ranked lists, reranks the passages for how directly they answer,
+and hands the top ones to the model. The model writes the answer with numbered citations
+that map back to those passages, and the interface shows the list underneath the answer.
+
+## Tech stack
+
+- Web: React 19, TypeScript, Vite, React Router, Motion.
+- Worker: Cloudflare Workers (TypeScript), Neon Postgres over the serverless driver.
+- Pipeline: Python 3 with `fastembed` for local embeddings.
+- Data: Neon Postgres with `pgvector` for the corpus, plus the PSI tables.
+- Hosting: Cloudflare Pages for the site and Cloudflare Workers for the API.
+
+## Running it
+
+```bash
+cp .env.example .env          # add DATABASE_URL and the storage keys
+
+npm run db:migrate
+npm run pipeline:collect
+npm run pipeline:clean
+npm run pipeline:index
+npm run pipeline:analyze
+
+npm run web:install
+npm run web:dev
+```
+
+The dashboard talks to the `lava-agent` worker. Vite proxies `/api/*` to the deployed
+worker in dev, so you can see the UI without running the worker. To ship changes:
+
+```bash
+npm run worker:deploy
+npm run web:deploy
+```
+
+The insight cards are written by the SI core, one model call per topic, so they are
+regenerated on demand rather than during a page request. After a deploy:
+
+```bash
+npm run insights:refresh   # needs LAVA_INSIGHT_TOKEN in .env, bound to the worker
+```
+
+## Things that were hard
+
+- Retrieval started out vector-only. On SAFFIRE questions it kept returning passages that
+  were close in meaning but not about the question. Mixing keyword search in and fusing the
+  two result lists fixed most of it. We did not expect lexical matching to matter that much.
+- Neon sleeps on the free plan, so the first query after a quiet stretch is slow. We keep
+  the health check warm and show a loading state instead of an empty panel while it wakes.
+- Embeddings are the slowest step. They run locally through fastembed, so there is no API
+  key to manage, but a full re-index still takes a while and we have not parallelised it well.
+- The agent used to give up and paste raw passages instead of writing an answer. Our first
+  model was slow enough to hit our own time limit. Moving the fast path to a smaller model
+  brought real answers back in 7 to 12 seconds.
+- Lining up the PSI spreadsheets with our experiment metadata was fiddlier than expected.
+  The CSV columns do not match our condition fields cleanly, so we load the tables as they
+  are instead of forcing every column into a field.
+- The PSI rows nearly took over the search results. Every row carries its campaign name,
+  so on a "how does buoyancy affect flame spread" question the numbers out-scored the
+  papers that actually explain the physics and filled the whole list. We cap measured rows
+  at a third of the results now, which keeps the prose in front and the numbers alongside.
+- Translating a page was fine until the insight cards arrived. A batch of long paragraphs
+  comes back from the translation service split into more pieces than we sent, which
+  quietly broke the string-to-translation pairing and left cards half in English. We retry
+  a misaligned batch one string at a time, where the pieces just concatenate.
+- The PSI values are raw and unverified. We store them exactly as NASA publishes them and
+  say so, so nobody mistakes a spreadsheet number for a checked one.
+
+## Known limitations
+
+- The extracted numbers are regex candidates, not facts. They need a human review step
+  before anyone treats them as more than candidates.
+- Coverage is uneven across campaigns. We show the gaps; we have not filled them.
+- Streaming works for the agent, but the report builder still waits for the whole run.
+
+## NASA Data and Resources
+
+Everything comes from the NASA Technical Reports Server (NTRS) public API. We harvested
+376 documents, about 2.6M words, across the microgravity combustion campaigns: BASS-II,
+SAFFIRE, SAME, FLEX-2, ACME, CFI and SoFIE. Documents are deduplicated by content hash and
+we prefer the NTRS full text over our own PDF parsing because it is cleaner. Numbers
+pulled from the documents are candidates for review, not ground truth, and the interface
+labels them that way.
+
+We also load the published experiment tables from NASA's Physical Sciences Informatics
+(PSI) repository. That is 24 combustion investigations and their spreadsheets as structured
+tables (BASS-II, SAFFIRE-I/II, FLEX-2, SAME-R, CFI-G, ACME, SPICE, SLICE and others), shown
+on the Experiments page so you can read the measured values instead of only the paper's
+prose. The agent searches those rows alongside the reports, so a question that names a
+quantity or a test id can surface real numbers. Each record links back to its source on PSI.
+
+How we access it:
+
+- NTRS search and record API: `https://ntrs.nasa.gov/api/citations/search`, and the record
+  and full-text files under `https://ntrs.nasa.gov`. See `pipeline/lib/config.py` and
+  `pipeline/collect.py`.
+- PSI repository: `https://psi.nasa.gov`. The investigation pages are
+  `https://psi.nasa.gov/physci/repo/data/investigations/<ID>`. We read the published
+  experiment spreadsheets, inferred each column's type from the values, and loaded them
+  into Postgres. The schema and the investigation registry are in
+  `db/migrations/0012_psi_tables.sql`; the raw CSV filenames are kept alongside each table.
+- No Space Agency Partner data is used. Nothing here is a NASA statement, and LAVA is not
+  affiliated with or endorsed by NASA.
+
+## References and Credits
+
+- Fonts: Manrope and IBM Plex Sans Arabic, served from Google Fonts under the SIL Open
+  Font License.
+- Icons: drawn in-house as inline SVG in `web/src/components/Icon.tsx`; no third-party icon
+  set.
+- Space imagery and the Earth video under `web/public/assets/`: placeholder art from the
+  original scaffold. We have not yet confirmed the license of every file, so treat them as
+  placeholders and replace them before any public submission. Flagged for review below.
+- Libraries: React, React Router and Motion (MIT); Vite and TypeScript (MIT); Cloudflare
+  Workers and `@neondatabase/serverless` (MIT/Apache-2.0); Neon Postgres with `pgvector`
+  (PostgreSQL License / PostgreSQL License); Python and `fastembed` (Apache-2.0).
+- The corpus text is NASA's published work and stays the property of its authors; we store
+  it for search and quote short passages with a link back to the source.
+
+
+## More
+
+- [docs/API.md](docs/API.md) covers the endpoints and response shapes
+- [docs/SETUP.md](docs/SETUP.md) covers setup, deploy and the database schema
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE).

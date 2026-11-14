@@ -1,0 +1,245 @@
+{
+  "overview": {
+    "documents": 352,
+    "documents_with_fulltext": 352,
+    "chunks": 10066,
+    "embeddings": 10066,
+    "experiments": 8,
+    "findings": 461,
+    "insights": 8,
+    "corpus_words": 2571812,
+    "corpus_chars": 15389911,
+    "artifact_bytes": "358781544"
+  },
+  "metrics": [
+    {
+      "metric": "pressure",
+      "n": 189,
+      "min_value": "0.0000",
+      "max_value": "827.0000",
+      "avg_value": "46.3330",
+      "unit": "atm"
+    },
+    {
+      "metric": "oxygen concentration",
+      "n": 50,
+      "min_value": "0.0000",
+      "max_value": "100.0000",
+      "avg_value": "24.2071",
+      "unit": "%"
+    },
+    {
+      "metric": "droplet diameter",
+      "n": 45,
+      "min_value": "0.5000",
+      "max_value": "500.0000",
+      "avg_value": "16.9927",
+      "unit": "mm"
+    },
+    {
+      "metric": "soot volume fraction",
+      "n": 43,
+      "min_value": "0.0000",
+      "max_value": "295.0000",
+      "avg_value": "16.0581",
+      "unit": "ppm"
+    },
+    {
+      "metric": "flame temperature",
+      "n": 33,
+      "min_value": "2.0000",
+      "max_value": "2390.0000",
+      "avg_value": "1366.2424",
+      "unit": "K"
+    },
+    {
+      "metric": "limiting oxygen index",
+      "n": 30,
+      "min_value": "2.0000",
+      "max_value": "83.0000",
+      "avg_value": "34.4500",
+      "unit": "%"
+    },
+    {
+      "metric": "gravity level",
+      "n": 21,
+      "min_value": "1.0000",
+      "max_value": "75.0000",
+      "avg_value": "9.0000",
+      "unit": "g"
+    },
+    {
+      "metric": "smoke particle size",
+      "n": 15,
+      "min_value": "0.0560",
+      "max_value": "450.0000",
+      "avg_value": "65.5091",
+      "unit": "\u03bcm"
+    },
+    {
+      "metric": "flame length",
+      "n": 11,
+      "min_value": "2.0000",
+      "max_value": "55.0000",
+      "avg_value": "25.5455",
+      "unit": "mm"
+    },
+    {
+      "metric": "flow velocity",
+      "n": 10,
+      "min_value": "0.3500",
+      "max_value": "200.0000",
+      "avg_value": "33.1850",
+      "unit": "cm/s"
+    },
+    {
+      "metric": "heat release rate",
+      "n": 4,
+      "min_value": "10.0000",
+      "max_value": "100.0000",
+      "avg_value": "57.0000",
+      "unit": "W"
+    },
+    {
+      "metric": "flame spread rate",
+      "n": 3,
+      "min_value": "0.1500",
+      "max_value": "1.5000",
+      "avg_value": "0.6300",
+      "unit": "cm/s"
+    },
+    {
+      "metric": "burn time",
+      "n": 3,
+      "min_value": "2.0000",
+      "max_value": "420.0000",
+      "avg_value": "141.9667",
+      "unit": "s"
+    },
+    {
+      "metric": "flame height",
+      "n": 3,
+      "min_value": "3.0000",
+      "max_value": "14.9000",
+      "avg_value": "7.1333",
+      "unit": "cm"
+    }
+  ],
+  "experiment_coverage": [
+    {
+      "code": "SAME",
+      "name": "Smoke Aerosol Measurement Experiment",
+      "campaign": "SAME",
+      "documents": 40,
+      "findings": 0
+    },
+    {
+      "code": "SAFFIRE",
+      "name": "Spacecraft Fire Safety Experiment",
+      "campaign": "SAFFIRE",
+      "documents": 9,
+      "findings": 0
+    },
+    {
+      "code": "BASS",
+      "name": "Burning and Suppression of Solids",
+      "campaign": "BASS",
+      "documents": 7,
+      "findings": 0
+    },
+    {
+      "code": "BASS-II",
+      "name": "Burning and Suppression of Solids - II",
+      "campaign": "BASS",
+      "documents": 6,
+      "findings": 0
+    },
+    {
+      "code": "ACE",
+      "name": "Advanced Combustion via Microgravity Experiments",
+      "campaign": "ACE",
+      "documents": 5,
+      "findings": 0
+    },
+    {
+      "code": "SoFIE",
+      "name": "Solid Fuel Ignition and Extinction",
+      "campaign": "SoFIE",
+      "documents": 2,
+      "findings": 0
+    },
+    {
+      "code": "FLEX-2",
+      "name": "Flame Extinguishment Experiment - 2",
+      "campaign": "FLEX",
+      "documents": 1,
+      "findings": 0
+    },
+    {
+      "code": "CFI",
+      "name": "Cool Flames Investigation",
+      "campaign": "CFI",
+      "documents": 0,
+      "findings": 0
+    }
+  ],
+  "insights": [
+    {
+      "slug": "flame-spread-over-solid-fuels-in-microgravity-1",
+      "title": "Flame Spread Over Solid Fuels In Microgravity",
+      "severity": "high",
+      "confidence": 0.8,
+      "evidence_documents": 6
+    },
+    {
+      "slug": "flame-extinction-limits-and-quenching-in-microgravity-2",
+      "title": "Flame Extinction Limits And Quenching In Microgravity",
+      "severity": "high",
+      "confidence": 0.8,
+      "evidence_documents": 3
+    },
+    {
+      "slug": "limiting-oxygen-concentration-for-spacecraft-fire-safety-3",
+      "title": "Limiting Oxygen Concentration For Spacecraft Fire Safety",
+      "severity": "critical",
+      "confidence": 0.8,
+      "evidence_documents": 5
+    },
+    {
+      "slug": "smoke-and-soot-production-for-spacecraft-fire-detection-4",
+      "title": "Smoke And Soot Production For Spacecraft Fire Detection",
+      "severity": "medium",
+      "confidence": 0.8,
+      "evidence_documents": 6
+    },
+    {
+      "slug": "fire-suppression-agents-and-methods-in-microgravity-5",
+      "title": "Fire Suppression Agents And Methods In Microgravity",
+      "severity": "high",
+      "confidence": 0.8,
+      "evidence_documents": 5
+    },
+    {
+      "slug": "low-temperature-cool-flame-ignition-hazards-6",
+      "title": "Low-Temperature Cool Flame Ignition Hazards",
+      "severity": "medium",
+      "confidence": 0.8,
+      "evidence_documents": 6
+    },
+    {
+      "slug": "pressure-and-atmosphere-effects-on-spacecraft-flammability-7",
+      "title": "Pressure And Atmosphere Effects On Spacecraft Flammability",
+      "severity": "high",
+      "confidence": 0.8,
+      "evidence_documents": 5
+    },
+    {
+      "slug": "large-scale-fire-growth-in-spacecraft-saffire-lessons-8",
+      "title": "Large-Scale Fire Growth In Spacecraft (Saffire) Lessons",
+      "severity": "critical",
+      "confidence": 0.8,
+      "evidence_documents": 5
+    }
+  ],
+  "provider": "deterministic"
+}

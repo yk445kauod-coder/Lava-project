@@ -1,0 +1,34 @@
+{
+  "name": "lava-web",
+  "private": true,
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "description": "LAVA - research console over the NASA microgravity combustion corpus",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name=lava-project --branch=main",
+    "css:scope": "python3 scripts/scope_css.py src/styles/home.css .surface-landing src/styles/home.scoped.css lv-land && python3 scripts/scope_css.py src/styles/login.css .surface-login src/styles/login.scoped.css lv-login && python3 scripts/scope_css.py src/styles/app.css .console src/styles/app.scoped.css lv-app && python3 scripts/scope_css.py src/styles/styles.css .console-chat src/styles/styles.scoped.css lv-chat",
+    "prebuild": "npm run css:scope",
+    "predev": "npm run css:scope"
+  },
+  "dependencies": {
+    "motion": "^11.15.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8"
+  }
+}

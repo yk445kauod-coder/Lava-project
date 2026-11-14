@@ -1,0 +1,6 @@
+name = "lava-project"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-01-01"
+
+[vars]
+LAVA_LIVE_URL = "https://lava-agent.yk445kauod.workers.dev"

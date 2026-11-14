@@ -1,0 +1,14 @@
+# HTML must revalidate so a new deploy is picked up immediately. Without this
+# the SPA fallback was cached for a week at the edge (s-maxage=604800), so
+# routes like /dashboard kept serving the previous deployment's HTML.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Content-hashed assets are safe to cache forever; the filename changes on
+# every build. This pattern also matches `/*` above and Cloudflare joins the
+# rules, so detach the broader Cache-Control before setting this one - two
+# max-age directives on one response is ambiguous. A detach only removes what
+# earlier rules added, so this narrower rule must stay last.
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable

@@ -1,0 +1,241 @@
+import { useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
+
+import { AppShell } from "../../components/AppShell";
+import { Chart } from "../../components/Chart";
+import { Markdown } from "../../components/Markdown";
+import { Empty, PageHead, Panel, Skeleton, Stat } from "../../components/Page";
+import { barList, donut } from "../../lib/chart";
+import { categoryLabel, fmt, num, pct } from "../../lib/format";
+import { useApi } from "../../lib/hooks";
+import { useTranslated, useTranslatedClamped } from "../../lib/i18n/data";
+import { useI18n } from "../../lib/i18n/provider";
+
+type Severity = "critical" | "high" | "medium" | "low";
+
+interface SupportingDocument {
+  source_id?: string;
+  title?: string;
+  landing_url?: string;
+  id?: number;
+}
+
+interface Insight {
+  id: number;
+  slug: string;
+  title: string;
+  body: string;
+  category: string | null;
+  severity: Severity | null;
+  confidence: number | null;
+  supporting_documents: SupportingDocument[] | null;
+  generated_by: string | null;
+  created_at: string;
+}
+
+interface Metric {
+  metric: string;
+  n: number;
+  min_value: number | null;
+  max_value: number | null;
+  avg_value: number | null;
+  unit: string | null;
+}
+
+interface Coverage {
+  code: string;
+  name: string;
+  campaign: string | null;
+  documents: number;
+}
+
+interface InsightsResponse {
+  insights: Insight[];
+  metrics: Metric[];
+  coverage: Coverage[];
+}
+
+const SEV_ORDER: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+const SEV_SLICES: Severity[] = ["critical", "high", "medium", "low"];
+
+/** Heuristic: route the body through the markdown renderer only when it
+ *  actually carries markdown syntax; otherwise show it as plain text. */
+const MD_RE = /(^|\n)\s*(#{1,4}\s|[-*]\s|\d+\.\s|>|\||```|\$\$)|\[[^\]]+\]\(https?:|\*\*|`[^`]+`|==[^=]+==/;
+const looksLikeMarkdown = (s: string) => MD_RE.test(s);
+
+function DocumentLinks({ docs }: { docs: SupportingDocument[] }) {
+  const { t } = useI18n();
+  const labels = useTranslatedClamped(
+    docs.map((d) => d.title || d.source_id || `#${d.id ?? ""}`),
+    42,
+  );
+  return (
+    <div className="meta wrap">
+      <span className="cite">{fmt(docs.length)} {t("sources")}</span>
+      {docs.map((d, i) => (
+        d.landing_url ? (
+          <a key={i} className="doc-link" href={d.landing_url} target="_blank" rel="noreferrer">
+            {labels[i]}
+          </a>
+        ) : (
+          <Link key={i} className="doc-link" to={`/explorer?id=${d.id ?? ""}`}>
+            {labels[i]}
+          </Link>
+        )
+      ))}
+    </div>
+  );
+}
+
+function Finding({ insight }: { insight: Insight }) {
+  const { t } = useI18n();
+  const [title, body] = useTranslated([insight.title, insight.body]);
+  const category = t(categoryLabel(insight.category));
+  const width = Math.max(2, Math.round((num(insight.confidence) ?? 0) * 100));
+  const docs = insight.supporting_documents ?? [];
+
+  return (
+    <article className="find" id={insight.slug || String(insight.id)}>
+      <div className="hstack wrap">
+        <span className="muted small">{category || ""}</span>
+        <span className="spacer" />
+        <span className="cite" title={t("confidence")}>
+          {pct(insight.confidence)}
+        </span>
+      </div>
+      <h3 style={{ fontSize: 16.5, margin: "10px 0 6px" }}>{title}</h3>
+      {body &&
+        (looksLikeMarkdown(body) ? (
+          <Markdown html={body} className="md small muted" />
+        ) : (
+          <p className="small muted" style={{ margin: "8px 0" }}>
+            {body}
+          </p>
+        ))}
+      <div className="bar-track" style={{ marginTop: 10 }} title={t("confidence")}>
+        <i style={{ width: `${width}%` }} />
+      </div>
+      {docs.length > 0 && <DocumentLinks docs={docs} />}
+    </article>
+  );
+}
+
+export default function Insights() {
+  const { t } = useI18n();
+  const { data, loading, error } = useApi<InsightsResponse>("/api/insights");
+
+  const insights = useMemo(
+    () =>
+      [...(data?.insights ?? [])].sort(
+        (a, b) =>
+          (SEV_ORDER[a.severity ?? ""] ?? 9) - (SEV_ORDER[b.severity ?? ""] ?? 9) ||
+          (num(b.confidence) ?? 0) - (num(a.confidence) ?? 0),
+      ),
+    [data],
+  );
+  const metrics = data?.metrics ?? [];
+  const coverage = data?.coverage ?? [];
+
+  const sevCount = useMemo(() => {
+    const c: Record<string, number> = { critical: 0, high: 0, medium: 0, low: 0 };
+    insights.forEach((i) => {
+      const k = i.severity ?? "low";
+      c[k] = (c[k] ?? 0) + 1;
+    });
+    return c;
+  }, [insights]);
+
+  const withEvidence = insights.filter((i) => (i.supporting_documents ?? []).length).length;
+  const total = insights.length;
+
+  const slices = SEV_SLICES.filter((k) => sevCount[k]).map((k) => ({ label: t(k), value: sevCount[k] }));
+  const maxDocs = Math.max(1, ...coverage.map((c) => num(c.documents) ?? 0));
+  const coverageNames = useTranslated(coverage.map((c) => c.name || ""));
+  const coverageHtml = barList(
+    coverage.map((c, i) => ({ label: c.code, value: num(c.documents) ?? 0, sub: coverageNames[i] || "" })),
+    { unit: t("docs"), max: maxDocs },
+  );
+
+  // The dashboard links to /insights#<slug>; jump to that finding once loaded.
+  useEffect(() => {
+    if (!data) return;
+    const hash = window.location.hash.replace("#", "");
+    if (!hash) return;
+    document.getElementById(hash)?.scrollIntoView({ block: "start" });
+  }, [data]);
+
+  if (loading) {
+    return (
+      <AppShell subtitle={t("Fire-Safety Insights")}>
+        <PageHead title={t("Fire-Safety Insights")} sub={t("Findings grounded in measured quantities")} />
+        <Panel title={t("Findings")}>
+          <Skeleton rows={5} />
+        </Panel>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell subtitle={t("Fire-Safety Insights")}>
+        <PageHead title={t("Fire-Safety Insights")} />
+        <Panel className="panel reveal">
+          <Empty icon="alert">{error}</Empty>
+        </Panel>
+      </AppShell>
+    );
+  }
+
+  return (
+    <AppShell subtitle={t("Fire-Safety Insights")}>
+      <PageHead
+        title={t("Fire-Safety Insights")}
+        sub={t("{n} findings grounded in {m} measured quantities")
+          .replace("{n}", fmt(total))
+          .replace("{m}", fmt(metrics.length))}
+      />
+
+      <div className="stat-row">
+        <Stat
+          label={t("Findings")}
+          value={total}
+          sub={`${fmt(sevCount.critical || 0)} ${t("critical severity")}`}
+        />
+        <Stat label={t("Grounded")} value={withEvidence} sub={t("carry supporting sources")} />
+        <Stat label={t("Metrics covered")} value={metrics.length} sub={t("distinct quantities")} />
+        <Stat label={t("Experiments")} value={coverage.length} sub={t("with linked documents")} />
+      </div>
+
+      <div className="two-a">
+        <Panel title={t("Findings")} sub={t("ordered by severity")}>
+          {insights.length ? (
+            insights.map((i) => <Finding key={i.slug || i.id} insight={i} />)
+          ) : (
+            <Empty>{t("No insights")}</Empty>
+          )}
+        </Panel>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
+          <Panel title={t("Severity")} sub={`${fmt(total)} ${t("findings")}`}>
+            <Chart
+              html={
+                slices.length
+                  ? donut({
+                      slices,
+                      center: fmt(total),
+                      centerSub: t("findings"),
+                      label: t("Findings by severity"),
+                    })
+                  : null
+              }
+              emptyText={t("No findings")}
+            />
+          </Panel>
+          <Panel title={t("Experiment coverage")} sub={t("documents per experiment")}>
+            <Chart className="" html={coverage.length ? coverageHtml : null} emptyText={t("No coverage")} />
+          </Panel>
+        </div>
+      </div>
+    </AppShell>
+  );
+}

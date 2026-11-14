@@ -1,0 +1,16 @@
+node_modules/
+.next/
+dist/
+.wrangler/
+.env
+.env.local
+__pycache__/
+*.pyc
+.pytest_cache/
+logs/
+data/
+*.tsbuildinfo
+.dev.vars
+Nasa2026.rar
+test-results/
+playwright-report/

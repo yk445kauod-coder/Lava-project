@@ -1,0 +1,20 @@
+name = "lava-gateway"
+main = "worker.js"
+compatibility_date = "2024-11-27"
+workers_dev = true
+
+# Multi-provider LLM gateway: AgentRouter (paid SI tier) plus free Groq, Gemini
+# and Cloudflare Workers AI. Stealth model ids are mapped in worker.js.
+#
+# Secrets (set with `wrangler secret put`, never committed):
+#   AGENTROUTER_API_KEY   paid upstream key
+#   LAVA_PROXY_TOKEN     caller token the agent Worker presents
+#   GROQ_API_KEY          free Groq key
+#   GEMINI_API_KEY        free Google Gemini key
+#   CLOUDFLARE_AI_TOKEN   token with Workers AI permission (for @cf models)
+[vars]
+CLOUDFLARE_ACCOUNT_ID = "708d1cc2fd5a22a9e495dfe415c9f921"
+# Let a free-tier request fall back to the paid SI cores only when every free
+# provider is out of quota (a hard failure otherwise). Remove to keep free
+# requests strictly free.
+LAVA_ALLOW_PAID_FALLBACK = "1"

@@ -1,0 +1,37 @@
+name = "lava-agent"
+main = "src/index.ts"
+compatibility_date = "2024-11-27"
+workers_dev = true
+
+# AI embedding (must match the corpus indexer: BAAI/bge-small-en-v1.5, 384d)
+ai = { binding = "AI" }
+
+# Worker-to-worker HTTP is blocked on *.workers.dev (Cloudflare error 1042),
+# so the gateway is reached through a Service Binding instead.
+[[services]]
+binding = "GATEWAY"
+service = "lava-gateway"
+
+[vars]
+LAVA_GATEWAY_URL = "https://lava-gateway.yk445kauod.workers.dev"
+EMBED_MODEL = "@cf/baai/bge-small-en-v1.5"
+# Must match the `model` column in ignis.chunk_embedding (HF-style id).
+DB_EMBED_MODEL = "BAAI/bge-small-en-v1.5"
+DB_QUERY_FN = "ignis.search_chunks_hybrid"
+# Agentic loop: the SI cores drive it. Stealth ids are mapped to real
+# upstreams by the lava-gateway registry. The loop makes sequential upstream
+# calls, so the fast model must actually be fast: `si-1` (a flagship reasoning
+# core) costs 60-90s per completion and cannot reach synthesis inside the
+# deadline, which is how runs degraded to the extractive fallback. `si-pulse`
+# answers in ~3s with the same citation discipline.
+LAVA_DEEP_MODEL = "si-nova"
+LAVA_FAST_MODEL = "si-pulse"
+# SI rerank of the retrieved evidence: the model judges which passages actually
+# answer the question and the score is blended into the ranking. Set to "0" to
+# fall back to the lexical blend alone.
+LAVA_SI_RERANK = "1"
+
+# Secrets are injected at deploy time via wrangler secret / deploy script:
+#   NEON_DATABASE_URL        full postgres:// connection string (unpooled)
+#   LAVA_PROXY_TOKEN        caller token accepted by lava-gateway
+#   AGENTROUTER_API_KEY      upstream key passed through to gateway

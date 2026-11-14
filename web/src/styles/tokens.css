@@ -1,0 +1,143 @@
+/* LAVA design tokens - one source of truth.
+   The landing and the console historically used slightly different dark
+   palettes; both are kept as scoped overrides so neither surface changes. */
+:root {
+  --navy: #183B5B;
+  --steel: #4779A8;
+  --flame: #F07836;
+  --amber: #FFBD69;
+
+  /* shared core (light) */
+  --bg: #F4F7FB;
+  --surface: #fff;
+  --surface2: #EAF0F7;
+  --text: #25364A;
+  --muted: #5A6C82;
+  --border: #D9E2EC;
+  --shadow: 0 1px 2px rgba(24, 59, 91, .06), 0 6px 20px rgba(24, 59, 91, .06);
+  --r: 16px;
+
+  --flame-strong: #C4531A;
+  --accent-ink: #2E6FA8;
+  --btn-bg: #C4531A;
+  --btn-bg-hover: #A8430F;
+  --btn-ink: #fff;
+  --ring: rgba(240, 120, 54, .35);
+
+  /* semantic state */
+  --ok: #22c55e;
+  --danger: #ef4444;
+
+  /* type roles - one family across the app */
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-banner: "Manrope", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-body-ar: "IBM Plex Sans Arabic", "Manrope", system-ui, sans-serif;
+  --font-hero: "Orbitron", system-ui, sans-serif;
+  --font-mono: "Manrope", system-ui, sans-serif;
+
+  /* motion */
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --dur-press: 140ms;
+  --dur-quick: 180ms;
+  --dur-state: 240ms;
+  --dur-enter: 320ms;
+
+  /* chart palette */
+  --c1: #2E6FA8; --c2: #F07836; --c3: #4779A8; --c4: #C4531A; --c5: #6B4FA8; --c6: #1E8A6B;
+
+  /* console chrome + chat chrome: previously declared in app.css/styles.css,
+     which are now scoped per page, so the shared values live here. */
+  --dur-1: 140ms;
+  --dur-2: 220ms;
+  --dur-3: 320ms;
+  --dur-4: 520ms;
+  --side: #183B5B;
+  --side-text: #F4F7FB;
+  --side-muted: #B4C2D3;
+  --header: #183B5B;
+  --header-text: #fff;
+  --surface-2: var(--surface2);
+}
+
+/* console surface (dark values differ from the landing) */
+[data-theme="dark"] {
+  --bg: #101C2B;
+  --surface: #16283B;
+  --surface2: #1D344B;
+  --text: #F4F7FB;
+  --muted: #A9B8C9;
+  --border: #27425C;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  --flame-strong: #FF9A5C;
+  --accent-ink: #7FB3E0;
+  --btn-bg: #F07836;
+  --btn-bg-hover: #FFA76B;
+  --btn-ink: #231004;
+  --ring: rgba(255, 154, 92, .35);
+  --c1: #7FB3E0; --c2: #F07836; --c3: #5E8CB8; --c4: #FF9A5C; --c5: #A78BFA; --c6: #4ADE80;
+  --side: #0B1725;
+  --header: #0B1725;
+}
+
+/* landing surface overrides */
+.surface-landing {
+  --bg: #F4F7FB;
+  --muted: #55677D;
+  --shadow: 0 1px 2px rgba(24, 59, 91, .06), 0 8px 28px rgba(24, 59, 91, .08);
+  --band: #0C1B2A;
+  --ink: #0A1420;
+  --lab-ink: #183B5B;
+  --lab-steel: #4779A8;
+  --glass: rgba(255, 255, 255, .06);
+  --glass-brd: rgba(255, 255, 255, .14);
+  /* the landing's CTA is the brighter flame, not the console's burnt orange */
+  --btn-bg: #F07836;
+  --btn-bg-hover: #FFA76B;
+  --btn-ink: #231004;
+}
+[data-theme="dark"] .surface-landing {
+  --bg: #070d16;
+  --surface: #0F1B2A;
+  --surface2: #14253A;
+  --text: #EAF2FB;
+  --muted: #9DB0C6;
+  --border: #20374F;
+  --band: #060C15;
+  --ink: #04070d;
+  --accent-ink: #7FB3E0;
+  --flame-strong: #FF9A5C;
+  --lab-ink: #CFE2F5;
+  --lab-steel: #5E8CB8;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 34px rgba(0, 0, 0, .45);
+}
+
+/* Arabic roles: IBM Plex Sans Arabic for headlines and body. Mono keeps its
+   Latin face first so numbers and citations are unchanged, with IBM Plex as the
+   Arabic fallback. */
+:lang(ar) {
+  --font-display: var(--font-body-ar);
+  --font-banner: var(--font-body-ar);
+  --font-body: var(--font-body-ar);
+  --font-hero: var(--font-body-ar);
+  --font-mono: "Manrope", var(--font-body-ar);
+}
+
+/* login surface (was login.css :root) */
+.surface-login { --hero: #183B5B; --shadow: 0 1px 2px rgba(24, 59, 91, .06), 0 6px 20px rgba(24, 59, 91, .06); }
+[data-theme="dark"] .surface-login { --hero: #0B1725; }
+
+/* chat surface (was styles.css :root) */
+.console-chat {
+  --code: #EAF0F7;
+  --user: #FDE9DC;
+  --user-b: #F5C9AB;
+  --header-text: #fff;
+}
+[data-theme="dark"] .console-chat {
+  --code: #0B1725;
+  --user: #3A2A28;
+  --user-b: #6A3F2B;
+}
