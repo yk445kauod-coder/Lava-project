@@ -161,7 +161,7 @@ function List({
         <div className="field" style={{ minWidth: 240 }}>
           <Icon name="search" size={14} />
           <input
-            placeholder={t("Search titles and full text")}
+            aria-label={t("Search titles and full text")} placeholder={t("Search titles and full text")}
             autoComplete="off"
             value={text}
             onChange={(e) => setText(e.target.value)}

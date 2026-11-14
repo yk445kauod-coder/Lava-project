@@ -147,7 +147,7 @@ export default function Search() {
           <Icon name="search" size={14} />
           <input
             value={text}
-            placeholder={t("Search documents, experiments, datasets, findings...")}
+            aria-label={t("Search documents, experiments, datasets, findings...")} placeholder={t("Search documents, experiments, datasets, findings...")}
             autoComplete="off"
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {

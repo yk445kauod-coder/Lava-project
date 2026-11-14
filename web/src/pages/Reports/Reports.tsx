@@ -182,7 +182,7 @@ export default function Reports() {
           <div className="field" style={{ paddingRight: 6 }}>
             <Icon name="file" size={16} />
             <input
-              placeholder={t("Report topic...")}
+              aria-label={t("Report topic...")} placeholder={t("Report topic...")}
               autoComplete="off"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}

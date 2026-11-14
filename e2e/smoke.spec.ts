@@ -107,3 +107,27 @@ test("Arabic surfaces use IBM Plex Sans Arabic", async ({ page }) => {
   expect(navFont).toContain("IBM Plex Sans Arabic");
   expect(bodyFont).toContain("IBM Plex Sans Arabic");
 });
+
+/**
+ * Every text input needs an accessible name. The search boxes across the
+ * console carried only a `placeholder`, which screen readers do not treat as a
+ * label, so they were announced as unlabelled edit fields.
+ */
+test("every text input has an accessible name", async ({ page }) => {
+  for (const route of ["/dashboard", "/search", "/datasets", "/explorer", "/experiments", "/reports"]) {
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    const unnamed = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("input, select, textarea"))
+        .filter((el) => {
+          const e = el as HTMLInputElement;
+          if (e.type === "hidden") return false;
+          if (el.getAttribute("aria-label") || el.getAttribute("aria-labelledby")) return false;
+          if (e.id && document.querySelector(`label[for="${CSS.escape(e.id)}"]`)) return false;
+          return !el.closest("label");
+        })
+        .map((el) => el.outerHTML.slice(0, 80)),
+    );
+    expect(unnamed, `${route} has unnamed inputs`).toEqual([]);
+  }
+});

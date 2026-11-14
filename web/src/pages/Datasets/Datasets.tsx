@@ -154,7 +154,7 @@ function ListView({ data }: { data: DatasetsResponse }) {
         <div className="field" style={{ minWidth: 240 }}>
           <Icon name="search" size={14} />
           <input
-            placeholder={t("Search measurements")}
+            aria-label={t("Search measurements")} placeholder={t("Search measurements")}
             autoComplete="off"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

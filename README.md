@@ -29,9 +29,10 @@ Team Astro-Tech is four people:
 ## What it does
 
 - Search that mixes keyword matching with vector similarity. The next section says why.
-- An agent that breaks a question into sub-questions, retrieves passages, decides whether
-  it has enough, then writes an answer where each sentence points back to the passage it
-  came from.
+- An agent that retrieves passages, decides whether it has enough, then writes an answer
+  where each sentence points back to the passage it came from. In `deep` mode it first
+  breaks the question into sub-questions and searches each one; the default `fast` mode
+  answers from a single graded retrieval pass, which is what the public endpoint runs.
 - A ranking page that shows the score behind every passage instead of hiding it.
 - A comparison page for two campaigns, condition by condition.
 - **Mission Relevance**: pick a habitable crew environment (spacecraft cabin, EVA

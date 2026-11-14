@@ -152,7 +152,7 @@ function ListView() {
         <div className="field" style={{ minWidth: 240 }}>
           <Icon name="search" size={14} />
           <input
-            placeholder={t("Search experiments")}
+            aria-label={t("Search experiments")} placeholder={t("Search experiments")}
             autoComplete="off"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

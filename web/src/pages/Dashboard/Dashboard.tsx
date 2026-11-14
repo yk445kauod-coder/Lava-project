@@ -124,7 +124,7 @@ function AskPanel() {
           <div className="field" style={{ paddingRight: 6 }}>
             <Icon name="sparkles" size={16} />
             <input
-              placeholder={t("Ask a research question...")}
+              aria-label={t("Ask a research question...")} placeholder={t("Ask a research question...")}
               autoComplete="off"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
