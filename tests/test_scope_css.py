@@ -58,16 +58,23 @@ def test_element_level_attribute_is_still_scoped():
     assert scoped("[data-mode=micro] .glow") == ".console [data-mode=micro] .glow"
 
 
-def test_mobile_rtl_drawer_uses_physical_offsets_not_logical_inset():
-    """Regression: the mobile RTL drawer leaked a 110px strip of the sidebar.
+def test_mobile_rtl_drawer_uses_a_logical_inset_not_a_physical_side():
+    """Regression: the mobile RTL drawer opened from the wrong edge.
 
-    `.sidebar` is 280px wide and hidden with `translateX(100%)` in RTL. The rule
-    anchored it with `inset-inline-end:0`, which resolves to `left:0` under
-    `dir=rtl`; translating +100% then left a 280-110px sliver of the navy panel
-    on screen while the drawer was closed. It must use physical `right:0` so the
-    +100% translate moves the whole 280px off the right edge.
+    `.sidebar` is 280px wide and hidden with `translateX(-100%)`. The RTL
+    override used to re-anchor it with physical `left:auto;right:0`, but the
+    CSS minifier rewrites that pair to `inset-inline:auto 0`, which under
+    `dir=rtl` resolves to `right:auto;left:0` - the opposite edge - so the
+    drawer slid in from the left and leaked a strip while closed. Anchor it with
+    the logical `inset-inline-start` in the base rule and let RTL inherit that
+    edge; the RTL block may then only flip the translate sign.
     """
     css = (ROOT / "web" / "src" / "styles" / "app.css").read_text()
-    rtl_mobile_block = css.split("@media(max-width:760px){[dir=rtl] .sidebar{", 1)[1].split("}", 1)[0]
-    assert "right:0" in rtl_mobile_block
-    assert "inset-inline-end" not in css.split("[dir=rtl] .sidebar", 1)[1].split("\n", 1)[0]
+    base_mobile = css.split("@media(max-width:760px){.app{grid-template-columns:1fr}", 1)[1]
+    base_sidebar = base_mobile.split(".sidebar{", 1)[1].split("}", 1)[0]
+    assert "inset-inline-start:0" in base_sidebar
+    assert "left:0" not in base_sidebar
+
+    rtl_mobile = css.split("@media(max-width:760px){[dir=rtl] .sidebar{", 1)[1].split("}", 1)[0]
+    assert "transform:translateX(100%)" in rtl_mobile
+    assert "left:" not in rtl_mobile and "right:" not in rtl_mobile

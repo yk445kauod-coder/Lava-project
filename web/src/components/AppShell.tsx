@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useI18n } from "../lib/i18n/provider";
+import { useIsMobile, useMobileDrawer } from "../lib/useMobileDrawer";
 import { useScrollReveal } from "../lib/useReveal";
 import { useSheetDrag } from "../lib/useSheetDrag";
 import { Icon } from "./Icon";
@@ -65,37 +66,38 @@ export function AppShell({ children, subtitle, search, sidebarExtra, hideSidebar
   const { t } = useI18n();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [navOpen, setNavOpen] = useState(false);
+  const { navOpen, openDrawer, closeDrawer } = useMobileDrawer();
+  const isMobile = useIsMobile();
   const [moreOpen, setMoreOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   useScrollReveal(contentRef);
 
-  // Close the mobile drawer when the viewport grows back to desktop.
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 981px)");
-    const onChange = () => mq.matches && setNavOpen(false);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
+  // On a phone the drawer is mounted but off-screen; keep it out of the tab
+  // order and the accessibility tree until it opens.
+  const offCanvas = isMobile && !navOpen;
 
   return (
     <div className="console">
       <div className={`app${navOpen ? " nav-open" : ""}`} id="app">
-        <div className="scrim" id="scrim" onClick={() => setNavOpen(false)} />
+        <div className="scrim" id="scrim" onClick={closeDrawer} />
         {!hideSidebar && (
-          <Sidebar subtitle={subtitle} onClose={() => setNavOpen(false)}>
+          <Sidebar
+            subtitle={subtitle}
+            offCanvas={offCanvas}
+            onClose={closeDrawer}
+          >
             {sidebarExtra}
           </Sidebar>
         )}
         <main className="main">
-          <Topbar search={search} onOpenNav={() => setNavOpen(true)} />
+          <Topbar search={search} onOpenNav={openDrawer} />
           <div className="content" ref={contentRef}>
             {children}
           </div>
         </main>
 
         <nav className="m-botnav" aria-label={t("Primary")}>
-          <button className={`m-nav-btn${pathname !== "/chat" ? " on" : ""}`} type="button" onClick={() => setNavOpen(true)}>
+          <button className={`m-nav-btn${pathname !== "/chat" ? " on" : ""}`} type="button" onClick={openDrawer}>
             <Icon name="menu" size={19} />
             <span>{t("Menu")}</span>
           </button>

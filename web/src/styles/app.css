@@ -74,8 +74,18 @@ kbd{font-family:var(--font-mono);font-size:10px;border:1px solid rgba(255,255,25
 .only-mobile{display:none}.scrim{display:none}
 @media(max-width:1180px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 @media(max-width:760px){.app{grid-template-columns:1fr}
- .sidebar{position:fixed;left:0;top:0;bottom:0;width:280px;transform:translateX(-100%);transition:transform .3s}
- .app.nav-open .sidebar{transform:none}.app.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(11,23,37,.5);z-index:25}
+ /* Off-canvas drawer. Anchored to the inline-start edge (left in LTR, right in
+    RTL) and hidden by translating off that same edge, so RTL only flips the
+    sign of the transform. Writing physical left/right here would be rewritten
+    to logical properties by the minifier and then resolve to the wrong edge
+    under dir=rtl, which is what left the drawer on the wrong side. */
+ .sidebar{position:fixed;top:0;bottom:0;inset-inline-start:0;width:280px;padding-bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-100%);transition:transform .3s var(--ease-out);z-index:var(--z-drawer)}
+ .app.nav-open .sidebar{transform:none}
+ /* The scrim dims the whole page (the bottom navbar included) and the drawer
+    sits above it, so the drawer footer and sign-out stay reachable. */
+ .app.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(11,23,37,.5);z-index:var(--z-scrim)}
+ /* The nav list scrolls on a phone; fade its last pixels so the scroll reads. */
+ .nav{padding-bottom:2px;mask-image:linear-gradient(#000 calc(100% - 16px),transparent);-webkit-mask-image:linear-gradient(#000 calc(100% - 16px),transparent)}
  .only-mobile{display:inline-grid}.hide-sm,kbd{display:none}.content{padding:16px 12px 32px}.kpis{gap:10px}.val{font-size:26px}.mission{margin-left:0}.topbar{padding:10px 12px}
  .panel-h{padding:13px 14px}.stat{padding:13px 14px}.stat-row{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}}
 @media(max-width:380px){.stat-row{grid-template-columns:1fr}.stat-row .stat:nth-child(2){animation-delay:45ms}.stat-row .stat:nth-child(3){animation-delay:90ms}.stat-row .stat:nth-child(4){animation-delay:135ms}}
@@ -349,12 +359,13 @@ a{color:var(--accent-ink)}.card a,.find a{color:inherit}
 /* Right-to-left: mirror the shell, keep numbers/latin in the right order. */
 [dir=rtl] body{font-family:'IBM Plex Sans Arabic',Manrope,system-ui,sans-serif}
 [dir=rtl] .nav a.active{box-shadow:inset -3px 0 0 var(--flame)}
+/* The grid mirrors itself under dir=rtl (column 1 lands on the inline-start
+   edge), so the sidebar needs no order/column override. Flipping it by hand put
+   the docked sidebar on the left while the drawer opened from the right. */
 [dir=rtl] .tbl th,[dir=rtl] .tbl td{text-align:right}
 [dir=rtl] .tbl th.num,[dir=rtl] .tbl td.num{text-align:left}
 [dir=rtl] .panel-h,[dir=rtl] .bar-top,[dir=rtl] .meta,[dir=rtl] .hstack{flex-direction:row-reverse}
 [dir=rtl] .spacer,[dir=rtl] .mission,[dir=rtl] .ts,[dir=rtl] .bar-val,[dir=rtl] .lv-key b{margin-inline-start:auto;margin-left:auto}
-[dir=rtl] .sidebar{order:2}
-[dir=rtl] .app{grid-template-columns:1fr 260px}
 [dir=rtl] .search input,[dir=rtl] .mono2,[dir=rtl] .id,[dir=rtl] .cite,[dir=rtl] .val,[dir=rtl] .stat .n{font-family:var(--font-mono);direction:ltr;unicode-bidi:embed}
 [dir=rtl] .page-head .grow,[dir=rtl] .bar-name{text-align:right}
 [dir=rtl] .md ul,[dir=rtl] .md ol{margin:8px 22px 8px 0}
@@ -363,7 +374,7 @@ a{color:var(--accent-ink)}.card a,.find a{color:inherit}
 [dir=rtl] .field,[dir=rtl] .ctl{flex-direction:row-reverse}
 [dir=rtl] .chart-svg{direction:ltr}
 [dir=rtl] .bar-track i{float:right}
-@media(max-width:760px){[dir=rtl] .sidebar{left:auto;right:0;transform:translateX(100%)}
+@media(max-width:760px){[dir=rtl] .sidebar{transform:translateX(100%)}
   [dir=rtl] .app.nav-open .sidebar{transform:none}
   [dir=rtl] .app{grid-template-columns:1fr}}
 

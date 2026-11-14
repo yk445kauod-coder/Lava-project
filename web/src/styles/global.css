@@ -113,7 +113,7 @@ img, video { max-width: 100%; display: block; }
     grid-auto-flow: column;
     position: fixed;
     left: 0; right: 0; bottom: 0;
-    z-index: 50;
+    z-index: var(--z-botnav);
     height: calc(56px + env(safe-area-inset-bottom));
     box-sizing: border-box;
     background: var(--surface);
@@ -139,7 +139,7 @@ img, video { max-width: 100%; display: block; }
   .sheet-handle { display: grid; place-items: center; padding: 8px 0 6px; touch-action: none; flex: none; }
   .sheet-handle span { width: 40px; height: 4px; border-radius: 999px; background: var(--border); }
 
-  .m-sheet { display: block; position: fixed; inset: 0; z-index: 70; visibility: hidden; pointer-events: none; }
+  .m-sheet { display: block; position: fixed; inset: 0; z-index: var(--z-sheet); visibility: hidden; pointer-events: none; }
   .m-sheet .scrim { display: block; position: absolute; inset: 0; background: rgba(11, 23, 37, .5); opacity: 0; transition: opacity 220ms; }
   .m-sheet .sheet {
     position: absolute; left: 0; right: 0; bottom: 0;

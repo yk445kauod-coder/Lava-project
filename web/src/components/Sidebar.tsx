@@ -12,6 +12,8 @@ interface SidebarProps {
   initials?: string;
   profileName?: string;
   onClose?: () => void;
+  /** Mounted but off-screen, so it must be inert to keyboard and screen readers. */
+  offCanvas?: boolean;
   /** Extra content (chat history, new-chat button) rendered under the nav. */
   children?: ReactNode;
 }
@@ -28,6 +30,7 @@ export function Sidebar({
   initials,
   profileName,
   onClose,
+  offCanvas = false,
   children,
 }: SidebarProps) {
   const { t } = useI18n();
@@ -36,7 +39,13 @@ export function Sidebar({
   const name = profileName || user?.name || user?.email || "LAVA Lab";
   const av = initials || initialsOf(name);
   return (
-    <aside className="sidebar" id="sidebar">
+    <aside
+      className="sidebar"
+      id="sidebar"
+      aria-label={t(subtitle)}
+      aria-hidden={offCanvas || undefined}
+      inert={offCanvas || undefined}
+    >
       <div className="brand">
         <BrandLogo />
         <small>{t(subtitle)}</small>

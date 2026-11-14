@@ -20,6 +20,7 @@ import { clamp, fmt } from "../../lib/format";
 import { useCorpusStats } from "../../lib/hooks";
 import { useI18n } from "../../lib/i18n/provider";
 import { useTranslated } from "../../lib/i18n/data";
+import { useMobileDrawer, useIsMobile } from "../../lib/useMobileDrawer";
 import { NAV } from "../../lib/nav";
 import { postSse } from "../../lib/sse";
 import { useSheetDrag } from "../../lib/useSheetDrag";
@@ -293,6 +294,7 @@ function ChatSidebar({
   onSelect,
   onDelete,
   onClose,
+  offCanvas = false,
 }: {
   convs: Conversation[];
   activeId: string | null;
@@ -300,12 +302,19 @@ function ChatSidebar({
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
+  offCanvas?: boolean;
 }) {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const groups = useMemo(() => groupConversations(convs, query), [convs, query]);
   return (
-    <aside className="sidebar" id="sidebar">
+    <aside
+      className="sidebar"
+      id="sidebar"
+      aria-label={t("LAVA Intelligence")}
+      aria-hidden={offCanvas || undefined}
+      inert={offCanvas || undefined}
+    >
       <div className="brand">
         <BrandLogo />
         <small>{t("LAVA Intelligence")}</small>
@@ -512,7 +521,8 @@ export default function Chat() {
   const [panelOff, setPanelOff] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches,
   );
-  const [navOpen, setNavOpen] = useState(false);
+  const { navOpen, openDrawer, closeDrawer } = useMobileDrawer();
+  const isMobileChat = useIsMobile();
   const [moreOpen, setMoreOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -611,7 +621,7 @@ export default function Chat() {
   function newChat() {
     setActiveId(null);
     setDraft("");
-    setNavOpen(false);
+    closeDrawer();
     setMoreOpen(false);
     textRef.current?.focus();
   }
@@ -627,22 +637,23 @@ export default function Chat() {
         className={`app${navOpen ? " nav-open" : ""}${panelOpen ? " panel-open" : " panel-off"}`}
         id="app"
       >
-        <div className="scrim" onClick={() => setNavOpen(false)} />
+        <div className="scrim" onClick={() => closeDrawer()} />
         <ChatSidebar
           convs={convs}
           activeId={activeId}
           onNew={newChat}
           onSelect={(id) => {
             setActiveId(id);
-            setNavOpen(false);
+            closeDrawer();
           }}
           onDelete={deleteConv}
-          onClose={() => setNavOpen(false)}
+          onClose={() => closeDrawer()}
+          offCanvas={isMobileChat && !navOpen}
         />
 
         <main className="main">
           <header className="topbar">
-            <button className="icon-btn only-mobile" type="button" aria-label={t("Open menu")} onClick={() => setNavOpen(true)}>
+            <button className="icon-btn only-mobile" type="button" aria-label={t("Open menu")} onClick={() => openDrawer()}>
               <Icon name="menu" size={20} />
             </button>
             <div className="title">
@@ -765,7 +776,7 @@ export default function Chat() {
         <ResearchPanel onAsk={ask} onDismiss={() => setPanelOff(true)} />
 
         <nav className="m-botnav" aria-label={t("Primary")}>
-          <button className="m-nav-btn" type="button" onClick={() => setNavOpen(true)}>
+          <button className="m-nav-btn" type="button" onClick={() => openDrawer()}>
             <Icon name="menu" size={19} />
             <span>{t("Chats")}</span>
           </button>

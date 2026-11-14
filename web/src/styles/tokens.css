@@ -153,3 +153,14 @@
   --user: #3A2A28;
   --user-b: #6A3F2B;
 }
+
+/* Stacking order for the app chrome, in one place. The mobile drawer must sit
+   above the bottom navbar or the bar eats the drawer footer (sign-out); the
+   scrim sits between the two so the page dims but the drawer stays on top. */
+:root {
+  --z-panel: 56;
+  --z-botnav: 50;
+  --z-scrim: 55;
+  --z-drawer: 60;
+  --z-sheet: 70;
+}
