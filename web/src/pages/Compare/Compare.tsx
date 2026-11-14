@@ -33,9 +33,13 @@ interface CompareExperiment {
   status: string | null;
   gravity_level: unknown;
   fuel_type: string | null;
+  sample_geometry: string | null;
+  fuel_thickness: unknown;
   ambient_gas: string | null;
   pressure_kpa: unknown;
   o2_fraction: unknown;
+  flow_velocity: unknown;
+  flow_velocity_unit: string | null;
   ignition_source: string | null;
   objective: string | null;
   summary: string | null;
@@ -68,9 +72,12 @@ const DIMS: { key: keyof CompareExperiment; label: string }[] = [
   { key: "status", label: "Status" },
   { key: "gravity_level", label: "Gravity" },
   { key: "fuel_type", label: "Fuel" },
+  { key: "sample_geometry", label: "Sample shape" },
+  { key: "fuel_thickness", label: "Thickness" },
   { key: "ambient_gas", label: "Ambient gas" },
   { key: "o2_fraction", label: "O₂" },
   { key: "pressure_kpa", label: "Pressure" },
+  { key: "flow_velocity", label: "Flow velocity" },
   { key: "ignition_source", label: "Ignition" },
   { key: "document_count", label: "Documents" },
 ];
@@ -97,6 +104,14 @@ export default function Compare() {
     }
     if (dim === "o2_fraction") return pct(v);
     if (dim === "pressure_kpa") return `${fmt(v)} kPa`;
+    if (dim === "flow_velocity") {
+      const n = num(v);
+      return n === null ? t("not reported") : `${fmt(n)} cm/s`;
+    }
+    if (dim === "fuel_thickness") {
+      const n = num(v);
+      return n === null ? t("not reported") : `${fmt(n)} mm`;
+    }
     if (dim === "gravity_level") {
       const n = num(v);
       return n === null ? t("not reported") : `${n.toExponential(1)} g`;

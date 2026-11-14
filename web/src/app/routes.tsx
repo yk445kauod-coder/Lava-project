@@ -14,6 +14,7 @@ const Datasets = lazy(() => import("../pages/Datasets/Datasets"));
 const Coverage = lazy(() => import("../pages/Coverage/Coverage"));
 const Relevance = lazy(() => import("../pages/Relevance/Relevance"));
 const Safety = lazy(() => import("../pages/Safety/Safety"));
+const Modeling = lazy(() => import("../pages/Modeling/Modeling"));
 const Insights = lazy(() => import("../pages/Insights/Insights"));
 const Reports = lazy(() => import("../pages/Reports/Reports"));
 const Rank = lazy(() => import("../pages/Rank/Rank"));
@@ -39,6 +40,7 @@ export const routes: RouteObject[] = [
       { path: "coverage", element: <Coverage /> },
       { path: "relevance", element: <Relevance /> },
       { path: "safety", element: <Safety /> },
+      { path: "modeling", element: <Modeling /> },
       { path: "insights", element: <Insights /> },
       { path: "reports", element: <Reports /> },
       { path: "rank", element: <Rank /> },

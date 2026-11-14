@@ -34,6 +34,7 @@ export const NAV: NavGroup[] = [
       { id: "chat", href: "/chat", icon: "comments", label: "LAVA Intelligence" },
       { id: "reports", href: "/reports", icon: "file", label: "Research Briefs" },
       { id: "relevance", href: "/relevance", icon: "telescope", label: "Mission Relevance" },
+      { id: "modeling", href: "/modeling", icon: "activity", label: "Predictive Modeling" },
       { id: "safety", href: "/safety", icon: "layers", label: "Fire Safety Systems" },
       { id: "insights", href: "/insights", icon: "bolt", label: "Fire-Safety Insights" },
       { id: "rank", href: "/rank", icon: "rank", label: "Smart Ranking" },

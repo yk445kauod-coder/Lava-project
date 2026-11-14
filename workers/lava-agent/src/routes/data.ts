@@ -134,11 +134,11 @@ export async function handleDataRoutes(request: Request, url: URL, env: Env): Pr
   if (request.method === "GET" && pathname === "/experiments") {
     const sql = db(env);
     const [experiments, facilities] = await Promise.all([
-      sql`SELECT e.id, e.code, e.name, e.campaign, e.status, e.gravity_level, e.fuel_type, e.ambient_gas, e.o2_fraction, e.pressure_kpa, e.objective, e.summary, e.aliases, e.psi_investigation_id, e.psi_version, e.psi_doi, e.psi_url, e.psi_status, f.code AS facility, f.name AS facility_name, f.platform, (SELECT count(*)::int FROM ignis.experiment_document ed WHERE ed.experiment_id = e.id) AS documents, (SELECT count(DISTINCT fi.id)::int FROM ignis.finding fi JOIN ignis.experiment_document ed ON ed.document_id = fi.document_id WHERE ed.experiment_id = e.id) AS findings FROM ignis.experiment e LEFT JOIN ignis.facility f ON f.id = e.facility_id ORDER BY documents DESC, e.code`,
+      sql`SELECT e.id, e.code, e.name, e.campaign, e.status, e.gravity_level, e.fuel_type, e.sample_geometry, e.fuel_thickness, e.ambient_gas, e.flow_velocity, e.flow_velocity_unit, e.o2_fraction, e.pressure_kpa, e.objective, e.summary, e.aliases, e.psi_investigation_id, e.psi_version, e.psi_doi, e.psi_url, e.psi_status, f.code AS facility, f.name AS facility_name, f.platform, (SELECT count(*)::int FROM ignis.experiment_document ed WHERE ed.experiment_id = e.id) AS documents, (SELECT count(DISTINCT fi.id)::int FROM ignis.finding fi JOIN ignis.experiment_document ed ON ed.document_id = fi.document_id WHERE ed.experiment_id = e.id) AS findings FROM ignis.experiment e LEFT JOIN ignis.facility f ON f.id = e.facility_id ORDER BY documents DESC, e.code`,
       sql`SELECT f.id, f.code, f.name, f.platform, f.agency, f.g_level, f.description, (SELECT count(*)::int FROM ignis.experiment e WHERE e.facility_id = f.id) AS experiments FROM ignis.facility f ORDER BY f.code`,
     ]);
     return json({
-      experiments: numify(experiments, ["o2_fraction", "pressure_kpa", "documents", "findings"]),
+      experiments: numify(experiments, ["o2_fraction", "pressure_kpa", "fuel_thickness", "flow_velocity", "documents", "findings"]),
       facilities: numify(facilities, ["experiments"]),
     });
   }

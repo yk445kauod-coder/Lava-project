@@ -42,6 +42,16 @@ Team Astro-Tech is four people:
   challenge-named investigations that **are** in PSI (SPICE, SLICE, DAFT-2, BRE, E-FIELD,
   CFI-G, each with its PSI id) and the ones the corpus genuinely does **not** hold yet
   (LUCI, FM2), so the gap is visible without overstating it.
+- **Predictive Modeling**: the challenge's second objective, answered honestly instead of
+  with a number we cannot defend. It names the model families the corpus can calibrate
+  (flame-spread rate, extinction and limiting oxygen, droplet burning rate, smoke and soot
+  transport, elevated-oxygen flammability), the measured inputs each one needs, and the
+  quantity it predicts - then states plainly where the data stops (partial gravity
+  unsampled, high oxygen only at small scale, extracted values still candidates). A second
+  view lists each investigation's **tested envelope**: the fuel, the sample or burner shape
+  and size, the conditions that **changed between its tests** (oxygen, pressure, flow,
+  thickness) and the ones held constant - the "how did tests within one investigation
+  differ" dimension the brief asks for. Every claim links to its NTRS source.
 - **Fire Safety Systems**: the challenge's three strategies - prevention, detection and
   suppression - each mapped to the investigations behind it and the next-generation control
   or equipment it informs, plus the shared hardware sets (CIR/ACME, MDCA, the MSG flow duct,
@@ -266,9 +276,6 @@ How we access it:
   Arabic (all Arabic text), served from Google Fonts under the SIL Open Font License.
 - Icons: drawn in-house as inline SVG in `web/src/components/Icon.tsx`; no third-party icon
   set.
-- Space imagery and the Earth video under `web/public/assets/`: open-source art from public
-  repositories and freely licensed libraries (GitHub and other public-license sources). Each
-  file is used under its source license, which permits reuse and redistribution.
 - Libraries: React, React Router and Motion (MIT); Vite and TypeScript (MIT); Cloudflare
   Workers and `@neondatabase/serverless` (MIT/Apache-2.0); Neon Postgres with `pgvector`
   (PostgreSQL License / PostgreSQL License); Python and `fastembed` (Apache-2.0).

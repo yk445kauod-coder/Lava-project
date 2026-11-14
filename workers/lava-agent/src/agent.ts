@@ -228,10 +228,12 @@ export async function compareExperiments(env: Env, codes: string[], topic: strin
       id: e.id, code: e.code, name: e.name, campaign: e.campaign, facility: e.facility_code,
       facility_name: e.facility_name, platform: e.platform, status: e.status, gravity_level: e.gravity_level,
       fuel_type: e.fuel_type, ambient_gas: e.ambient_gas, pressure_kpa: e.pressure_kpa, o2_fraction: e.o2_fraction,
+      sample_geometry: e.sample_geometry, fuel_thickness: e.fuel_thickness,
+      flow_velocity: e.flow_velocity, flow_velocity_unit: e.flow_velocity_unit,
       ignition_source: e.ignition_source, objective: e.objective, summary: e.summary,
       document_count: counts.get(e.id) ?? 0,
     })),
-    dimensions: ["campaign", "facility_code", "platform", "status", "gravity_level", "fuel_type", "ambient_gas", "pressure_kpa", "o2_fraction", "ignition_source"],
+    dimensions: ["campaign", "facility_code", "platform", "status", "gravity_level", "fuel_type", "sample_geometry", "fuel_thickness", "ambient_gas", "pressure_kpa", "o2_fraction", "flow_velocity", "ignition_source"],
     findings: Object.fromEntries((exps as any[]).map((e) => [String(e.id), byExp[e.id] ?? []])),
     metric_matrix: Object.entries(metricMatrix).sort(([a], [b]) => a.localeCompare(b)).map(([metric, values]) => ({ metric, values })),
   };

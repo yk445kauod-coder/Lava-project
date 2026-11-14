@@ -20,7 +20,11 @@ interface ExperimentSummary {
   status: string | null;
   gravity_level: unknown;
   fuel_type: string | null;
+  sample_geometry: string | null;
+  fuel_thickness: unknown;
   ambient_gas: string | null;
+  flow_velocity: unknown;
+  flow_velocity_unit: string | null;
   o2_fraction: unknown;
   pressure_kpa: unknown;
   objective: string | null;
@@ -383,6 +387,16 @@ function DetailView({ code }: { code: string }) {
               <dd>{grav(x.gravity_level)}</dd>
               <dt>{t("Fuel")}</dt>
               <dd>{x.fuel_type || t("not reported")}</dd>
+              <dt>{t("Sample shape")}</dt>
+              <dd>{x.sample_geometry || t("not reported")}</dd>
+              <dt>{t("Thickness")}</dt>
+              <dd>{num(x.fuel_thickness) !== null ? `${fmt(x.fuel_thickness)} mm` : t("not reported")}</dd>
+              <dt>{t("Flow velocity")}</dt>
+              <dd>
+                {num(x.flow_velocity) !== null
+                  ? `${fmt(x.flow_velocity)} ${x.flow_velocity_unit || "cm/s"}`
+                  : t("not reported")}
+              </dd>
               <dt>{t("Ambient gas")}</dt>
               <dd>{x.ambient_gas || t("not reported")}</dd>
               <dt>O₂</dt>
