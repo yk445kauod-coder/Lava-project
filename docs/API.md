@@ -120,9 +120,10 @@ Show the last three as degraded answers, because `answer` may be a short apology
 
 Callers pass a LAVA codename; the gateway maps it to a real upstream. `GET /api/models`
 returns the live list. Flagship (`si-1`, `si-max`, `si-ultra`) routes to AgentRouter;
-free (`si-nova*`, `si-pulse*`, `si-ember`) routes to Gemini, Groq and Cloudflare Workers
-AI. If the requested provider is missing or errors, the gateway falls through the free
-tier, and the response's `model` field reports what actually served it.
+free (`si-nova*`, `si-pulse*`, `si-ember`, `si-vega`) routes to Gemini, Groq,
+Cloudflare Workers AI and OpenRouter. If the requested provider is missing
+or errors, the gateway falls through the free tier, and the response's `model` field
+reports what actually served it.
 
 The flagship models are reasoning models: they spend hidden reasoning against the output
 budget, so a low cap returns empty content. The worker retries with a bigger budget

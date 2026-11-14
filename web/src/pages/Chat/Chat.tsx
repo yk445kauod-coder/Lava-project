@@ -55,6 +55,7 @@ const MODELS: { group: string; items: { value: string; label: string }[] }[] = [
       { value: "si-pulse", label: "SI PULSE (very fast)" },
       { value: "si-pulse-lite", label: "SI PULSE LITE (fastest)" },
       { value: "si-ember", label: "SI EMBER (edge-hosted)" },
+      { value: "si-vega", label: "SI VEGA (openrouter)" },
     ],
   },
 ];

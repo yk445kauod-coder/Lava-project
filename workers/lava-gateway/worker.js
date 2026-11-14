@@ -29,6 +29,7 @@ const MAX_PARAM_STRIPS = 3;
  *   agentrouter -> Responses API at agentrouter.org, key AGENTROUTER_API_KEY
  *   groq        -> OpenAI chat-completions, key GROQ_API_KEY
  *   gemini      -> native generateContent, key GEMINI_API_KEY
+ *   openrouter  -> OpenAI chat-completions at openrouter.ai, key OPENROUTER_API_KEY
  *   cloudflare  -> Workers AI run endpoint, key CLOUDFLARE_AI_TOKEN (or account token)
  *
  * `reasoning: true` marks a model that spends its budget on hidden thinking and
@@ -45,6 +46,7 @@ const MODEL_REGISTRY = {
   "si-pulse":      { provider: "groq",       upstream: "openai/gpt-oss-120b",                    label: "free", reasoning: true, blurb: "Very fast, high throughput" },
   "si-pulse-lite": { provider: "groq",       upstream: "openai/gpt-oss-20b",                     label: "free", reasoning: true, blurb: "Fastest, lightweight" },
   "si-ember":      { provider: "cloudflare", upstream: "@cf/meta/llama-3.3-70b-instruct-fp8-fast", label: "free", blurb: "Edge-hosted, reliable" },
+  "si-vega":       { provider: "openrouter", upstream: "google/gemma-4-31b-it:free",               label: "free", blurb: "OpenRouter free tier, extra redundancy" },
 };
 const FREE_MODEL_IDS = Object.keys(MODEL_REGISTRY).filter((k) => MODEL_REGISTRY[k].label === "free");
 const PAID_MODEL_IDS = Object.keys(MODEL_REGISTRY).filter((k) => MODEL_REGISTRY[k].label === "paid");
@@ -60,7 +62,7 @@ const DEFAULT_MODEL = "si-1";
  * only walked when a call actually fails; a healthy upstream is used directly.
  */
 const PAID_FALLBACK_ORDER = ["si-ultra", "si-max", "si-1"];
-const FREE_FALLBACK_ORDER = ["si-nova", "si-pulse", "si-ember", "si-nova-lite", "si-pulse-lite"];
+const FREE_FALLBACK_ORDER = ["si-nova", "si-pulse", "si-ember", "si-vega", "si-nova-lite", "si-pulse-lite"];
 
 /** Resolve a requested model id to a registry entry (falling back to AgentRouter). */
 function resolveModel(id) {
@@ -403,6 +405,9 @@ async function callProvider(request, env, entry, chat) {
     case "gemini":
       if (!env.GEMINI_API_KEY) throw providerError(entry.upstream, 503, { error: { message: "GEMINI_API_KEY not configured" } });
       return callGemini(env.GEMINI_API_KEY, entry.upstream, chat, opts);
+    case "openrouter":
+      if (!env.OPENROUTER_API_KEY) throw providerError(entry.upstream, 503, { error: { message: "OPENROUTER_API_KEY not configured" } });
+      return callOpenAICompatible("https://openrouter.ai/api/v1", env.OPENROUTER_API_KEY, entry.upstream, chat, opts);
     case "cloudflare": {
       const cfKey = env.CLOUDFLARE_AI_TOKEN || env.CLOUDFLARE_API_TOKEN;
       const acct = env.CLOUDFLARE_ACCOUNT_ID;
@@ -440,6 +445,7 @@ export default {
             agentrouter: Boolean(env.AGENTROUTER_API_KEY),
             groq: Boolean(env.GROQ_API_KEY),
             gemini: Boolean(env.GEMINI_API_KEY),
+            openrouter: Boolean(env.OPENROUTER_API_KEY),
             cloudflare: Boolean((env.CLOUDFLARE_AI_TOKEN || env.CLOUDFLARE_API_TOKEN) && env.CLOUDFLARE_ACCOUNT_ID),
           },
           free_models: FREE_MODEL_IDS,
