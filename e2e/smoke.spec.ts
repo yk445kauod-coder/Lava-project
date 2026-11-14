@@ -13,6 +13,7 @@ const CONTENT_ROUTES = [
   "/search",
   "/coverage",
   "/relevance",
+  "/safety",
   "/datasets",
   "/explorer",
   "/rank",

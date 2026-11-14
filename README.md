@@ -42,6 +42,12 @@ Team Astro-Tech is four people:
   challenge-named investigations that **are** in PSI (SPICE, SLICE, DAFT-2, BRE, E-FIELD,
   CFI-G, each with its PSI id) and the ones the corpus genuinely does **not** hold yet
   (LUCI, FM2), so the gap is visible without overstating it.
+- **Fire Safety Systems**: the challenge's three strategies - prevention, detection and
+  suppression - each mapped to the investigations behind it and the next-generation control
+  or equipment it informs, plus the shared hardware sets (CIR/ACME, MDCA, the MSG flow duct,
+  the Cygnus SAFFIRE flights), the sensor and measurement types, and the applications that
+  transfer back to fire safety on Earth. Every corpus claim links to its NTRS source, and a
+  claim taken from the brief rather than the corpus is labelled as such.
 - Fire-safety insights the SI core writes from the retrieved evidence, each one linked to
   the documents it came from.
 - A React dashboard in ten languages including right-to-left Arabic. English is the source

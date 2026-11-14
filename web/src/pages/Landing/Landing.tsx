@@ -37,6 +37,8 @@ const PILLARS = [
   { icon: "chart", to: "/datasets", b: "Measurements and data", s: "See the oxygen, pressure and flow values each source reports, and where they are missing." },
   { icon: "shield", to: "/coverage", b: "Coverage and gaps", s: "Check whether a scenario sits inside the tested envelope before you trust it." },
   { icon: "comments", to: "/chat", b: "Grounded answers", s: "Ask in Arabic or English and get an answer that cites the passage behind every claim." },
+  { icon: "telescope", to: "/relevance", b: "Mission relevance", s: "Rank the investigations that matter most for each crew environment, by a checkable rubric." },
+  { icon: "layers", to: "/safety", b: "Fire safety systems", s: "See the work behind prevention, detection and suppression, and what it brings to Earth." },
   { icon: "file", to: "/reports", b: "Research briefs", s: "Turn a question into a short report you can hand to a teammate." },
   { icon: "compare", to: "/compare", b: "Comparisons", s: "Put two campaigns side by side and see where their conditions diverge." },
 ];
@@ -239,7 +241,7 @@ export default function Landing() {
           <img className="wave" src="/assets/wave1.webp" alt="" aria-hidden="true" />
           <div className="wrap">
             <h2>{t("What the platform does")}</h2>
-            <p className="sub">{t("Six entry points, each tied to a real page in the console.")}</p>
+            <p className="sub">{t("Eight entry points, each tied to a real page in the console.")}</p>
             <div className="grid">
               {PILLARS.map((p) => (
                 <Reveal key={p.b} as={Link} to={p.to} className="card">
