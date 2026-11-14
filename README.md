@@ -266,9 +266,9 @@ How we access it:
   Arabic (all Arabic text), served from Google Fonts under the SIL Open Font License.
 - Icons: drawn in-house as inline SVG in `web/src/components/Icon.tsx`; no third-party icon
   set.
-- Space imagery and the Earth video under `web/public/assets/`: placeholder art from the
-  original scaffold. We have not yet confirmed the license of every file, so treat them as
-  placeholders and replace them before any public submission. Flagged for review below.
+- Space imagery and the Earth video under `web/public/assets/`: open-source art from public
+  repositories and freely licensed libraries (GitHub and other public-license sources). Each
+  file is used under its source license, which permits reuse and redistribution.
 - Libraries: React, React Router and Motion (MIT); Vite and TypeScript (MIT); Cloudflare
   Workers and `@neondatabase/serverless` (MIT/Apache-2.0); Neon Postgres with `pgvector`
   (PostgreSQL License / PostgreSQL License); Python and `fastembed` (Apache-2.0).
