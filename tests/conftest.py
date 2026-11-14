@@ -30,6 +30,14 @@ needs_db = pytest.mark.skipif(not DB_AVAILABLE, reason="Neon database unavailabl
 
 
 @pytest.fixture(scope="session")
+def db_or_skip() -> None:
+    """Skip the requesting test when no database is reachable, instead of
+    letting a connection error surface as a collection/fixture error."""
+    if not DB_AVAILABLE:
+        pytest.skip("Neon database unavailable")
+
+
+@pytest.fixture(scope="session")
 def root() -> Path:
     return ROOT
 

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# The pipeline and its DB-backed tests need a Postgres, but not the real one:
+# `tests/conftest.py` skips any test that cannot reach DATABASE_URL, so CI runs
+# the fast, deterministic subset and reports the skips instead of hiding them.
+# The web and worker suites are self-contained (vitest) and always run.
+
+jobs:
+  web:
+    name: web (typecheck, test, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npm run typecheck
+        working-directory: web
+      - run: npm test
+        working-directory: web
+      # `build` runs the scoped-CSS generator (prebuild) and tsc, so a stale or
+      # broken .scoped.css fails here rather than at deploy time.
+      - run: npm run build
+        working-directory: web
+
+  worker:
+    name: worker (typecheck, test, dry-run build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: workers/lava-agent/package-lock.json
+      - run: npm ci
+        working-directory: workers/lava-agent
+      - run: npm run typecheck
+        working-directory: workers/lava-agent
+      - run: npm test
+        working-directory: workers/lava-agent
+      # `wrangler deploy --dry-run` bundles the worker without touching the
+      # account, so a broken import or binding type fails CI.
+      - run: npm run build
+        working-directory: workers/lava-agent
+
+  pipeline:
+    name: pipeline (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m pytest tests -q

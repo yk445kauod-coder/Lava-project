@@ -1,0 +1,12 @@
+# Python dependencies for the corpus pipeline (pipeline/) and its tests (tests/).
+# The web app and the Workers have their own npm manifests; this file covers
+# only the Python side. Pin nothing tighter than a minor version: the pipeline
+# is run from a developer machine and from CI, and fastembed pulls ONNX runtime
+# wheels that move faster than a lockstep pin would tolerate.
+psycopg[binary]>=3.2,<4      # Neon Postgres driver (pipeline + DB-backed tests)
+fastembed>=0.4,<1            # local embeddings (pipeline/lib/embed.py)
+pypdf>=5,<7                  # PDF text fallback in pipeline/clean.py
+requests>=2.32,<3            # NTRS/PSI HTTP client (pipeline/lib/http.py)
+
+# Test-only
+pytest>=8,<9

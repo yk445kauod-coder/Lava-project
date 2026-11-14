@@ -31,6 +31,11 @@ LAVA_FAST_MODEL = "si-pulse"
 # fall back to the lexical blend alone.
 LAVA_SI_RERANK = "1"
 
+# Warm the Neon compute every 5 minutes so a reviewer never hits the resume cost
+# on the first public read. Neon suspends an idle database after a few minutes.
+[triggers]
+crons = ["*/5 * * * *"]
+
 # Secrets are injected at deploy time via wrangler secret / deploy script:
 #   NEON_DATABASE_URL        full postgres:// connection string (unpooled)
 #   LAVA_PROXY_TOKEN        caller token accepted by lava-gateway

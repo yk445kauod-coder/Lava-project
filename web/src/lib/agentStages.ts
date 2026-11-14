@@ -49,7 +49,7 @@ export function stageDetail(name: string, d: Record<string, unknown>, t: Transla
     case "synthesize":
       return `${d.model ?? t("model")} ${t("drafted {n} cited claims").replace("{n}", fmt(d.claims ?? 0))}`;
     case "verify":
-      return t("{n}% traced to a passage").replace("{n}", pct(d.verified_ratio));
+      return t("{n}% of quotes found in the passage they cite").replace("{n}", pct(d.verified_ratio));
     case "memory_write":
       return t("saved {n} findings").replace("{n}", fmt(d.n_claims ?? 0));
     case "visualize":

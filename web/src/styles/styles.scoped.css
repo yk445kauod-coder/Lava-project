@@ -286,21 +286,21 @@
 .console-chat .lang-menu button:hover{background:var(--surface2)}
 .console-chat .lang-menu button.on{background:var(--surface2);font-weight:700}
 .console-chat .lang-menu .code{margin-inline-start:auto;font-size:11px;color:var(--muted)}
-.console-chat [dir=rtl] .app{grid-template-columns:300px 1fr 260px}
-.console-chat [dir=rtl] .app.panel-off{grid-template-columns:0 1fr 260px}
-.console-chat [dir=rtl] .brand, .console-chat [dir=rtl] .conv, .console-chat [dir=rtl] .file, .console-chat [dir=rtl] .rel, .console-chat [dir=rtl] .panel-head, .console-chat [dir=rtl] .actions{text-align:start}
-.console-chat [dir=rtl] .msg.user{justify-content:flex-start}
-.console-chat [dir=rtl] .conv.active{box-shadow:inset -3px 0 0 var(--flame)}
-.console-chat [dir=rtl] .msg.user .body{border-bottom-right-radius:18px;border-bottom-left-radius:6px}
-.console-chat [dir=rtl] .msg.ai .body{border-top-left-radius:18px;border-top-right-radius:6px}
-.console-chat [dir=rtl] .composer{padding:8px 10px 8px 8px}
+[dir=rtl] .console-chat .app{grid-template-columns:300px 1fr 260px}
+[dir=rtl] .console-chat .app.panel-off{grid-template-columns:0 1fr 260px}
+[dir=rtl] .console-chat .brand, [dir=rtl] .console-chat .conv, [dir=rtl] .console-chat .file, [dir=rtl] .console-chat .rel, [dir=rtl] .console-chat .panel-head, [dir=rtl] .console-chat .actions{text-align:start}
+[dir=rtl] .console-chat .msg.user{justify-content:flex-start}
+[dir=rtl] .console-chat .conv.active{box-shadow:inset -3px 0 0 var(--flame)}
+[dir=rtl] .console-chat .msg.user .body{border-bottom-right-radius:18px;border-bottom-left-radius:6px}
+[dir=rtl] .console-chat .msg.ai .body{border-top-left-radius:18px;border-top-right-radius:6px}
+[dir=rtl] .console-chat .composer{padding:8px 10px 8px 8px}
 @media(max-width:1080px){
-.console-chat [dir=rtl] .app{grid-template-columns:1fr}
-.console-chat [dir=rtl] .app.panel-off{grid-template-columns:1fr}
+[dir=rtl] .console-chat .app{grid-template-columns:1fr}
+[dir=rtl] .console-chat .app.panel-off{grid-template-columns:1fr}
 }
 @media(max-width:900px){
-.console-chat [dir=rtl] .sidebar{position:fixed;inset-inline-start:auto;inset-inline-end:0;transform:translateX(100%);transition:transform .3s}
-.console-chat [dir=rtl] .app.nav-open .sidebar{transform:none}
+[dir=rtl] .console-chat .sidebar{position:fixed;inset-inline-start:auto;inset-inline-end:0;transform:translateX(100%);transition:transform .3s}
+[dir=rtl] .console-chat .app.nav-open .sidebar{transform:none}
 }
 @media(max-width:760px){
 .console-chat .app .panel{

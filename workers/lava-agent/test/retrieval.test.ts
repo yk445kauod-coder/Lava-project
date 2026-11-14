@@ -9,9 +9,9 @@
 import { describe, expect, test } from "vitest";
 
 import {
-  RANK_WEIGHTS, buildTsQuery, expandTokens, heuristicGrade, mmrDiversify,
+  RANK_WEIGHTS, buildTsQuery, citationCoverage, expandTokens, heuristicGrade, mmrDiversify,
   normalizeFusion, queryBigrams, queryTerms, queryTokens, relevanceGate, rerank,
-  applySiScores, capPsiShare, smartRank, stem, type Hit,
+  applySiScores, capPsiShare, smartRank, stem, verifyClaims, type Hit,
 } from "../src/retrieval";
 
 function hit(id: number, content: string, opts: Partial<Hit> = {}): Hit {
@@ -288,5 +288,60 @@ describe("hit explanation", () => {
     const h = hit(1, "The soot volume fraction grew with pressure.", { fused_score: 0.03 });
     smartRank([h], q);
     expect(h.why).toMatch(/soot/);
+  });
+});
+
+describe("citationCoverage", () => {
+  test("is 1 when every sentence carries a marker", () => {
+    const a = "Flame spread slows in microgravity [1]. Soot yields rise with pressure [2].";
+    expect(citationCoverage(a)).toBe(1);
+  });
+
+  test("is 0 when no sentence is cited - a fluent but unsourced answer", () => {
+    const a = "Flame spread slows in microgravity. Soot yields rise with pressure.";
+    expect(citationCoverage(a)).toBe(0);
+  });
+
+  test("is a fraction between the two for a partly-cited answer", () => {
+    const a = "Flame spread slows in microgravity [1]. This sentence has no citation at all here.";
+    expect(citationCoverage(a)).toBeCloseTo(0.5, 5);
+  });
+
+  test("ignores headings and short fragments that are not sentences", () => {
+    const a = "# Fire safety\n\nFlame spread slows in microgravity [1].";
+    expect(citationCoverage(a)).toBe(1);
+  });
+
+  test("returns 0 for empty or fragment-only input", () => {
+    expect(citationCoverage("")).toBe(0);
+    expect(citationCoverage("Short. Tiny.")).toBe(0);
+  });
+});
+
+describe("verifyClaims (provenance, not entailment)", () => {
+  const passage = "The flame spread rate decreased as the oxygen concentration was lowered, and extinction occurred below 16 percent oxygen.";
+  const map = () => new Map<number, Hit>([[1, hit(1, passage)]]);
+
+  test("marks a quote that is present in its passage as verified", () => {
+    const claims = [{ chunk_id: 1, quote: passage.slice(0, 60) }];
+    const { ratio } = verifyClaims(claims, map());
+    expect(ratio).toBe(1);
+    expect(claims[0].verified).toBe(true);
+  });
+
+  test("flags a quote that is NOT in the passage it cites", () => {
+    const claims = [{ chunk_id: 1, quote: "The reactor was shut down by a solar flare at dawn." }];
+    const { ratio } = verifyClaims(claims, map());
+    expect(ratio).toBe(0);
+    expect(claims[0].verified).toBe(false);
+  });
+
+  test("provenance is not entailment: an unrelated-but-overlapping quote passes", () => {
+    // Every content word here appears in the passage, so it verifies - even
+    // though the sentence asserts nothing the passage says. This is the honest
+    // limit of the check and the reason coverage, not this ratio, is reported.
+    const claims = [{ chunk_id: 1, quote: "flame oxygen concentration extinction percent lowered" }];
+    const { ratio } = verifyClaims(claims, map());
+    expect(ratio).toBe(1);
   });
 });

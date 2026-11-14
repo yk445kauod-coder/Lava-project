@@ -916,6 +916,21 @@ export function heuristicGrade(hits: Hit[]): { verdict: string; score: number } 
   return { verdict: "insufficient", score: avg };
 }
 
+/**
+ * Check that each claim's quote is actually present in the passage it points
+ * at. This is a **provenance** check, not entailment: it proves the quote was
+ * copied from that passage, nothing more. It cannot tell whether the quote
+ * supports the sentence next to it, and a claim that merely shares vocabulary
+ * with a passage will pass. The honest grounding signal is `citationCoverage`
+ * (how much of the prose cites anything) plus the reader's own eyes on the
+ * quote; this function exists so a claim that points at a passage which does
+ * not contain it - a mis-numbered citation - is flagged rather than shown.
+ *
+ * The primary path is an exact substring test (true by construction when we
+ * copied the quote ourselves). The fallback is a stem-aware token-overlap
+ * ratio, so a quote that was reflowed or lightly reworded by the model still
+ * matches its source.
+ */
 export function verifyClaims(claims: any[], hitsByChunk: Map<number, Hit>): { claims: any[]; ratio: number } {
   let supported = 0;
   for (const c of claims) {
@@ -927,8 +942,8 @@ export function verifyClaims(claims: any[], hitsByChunk: Map<number, Hit>): { cl
       const probe = quote.toLowerCase().slice(0, 180);
       if (probe && chunkLow.includes(probe)) ok = true;
       else {
-        const qt = new Set(words(quote.toLowerCase()).filter((w) => w.length > 3));
-        const ct = new Set(words(hit.content.toLowerCase()));
+        const qt = new Set(words(quote.toLowerCase()).filter((w) => w.length > 3).map(stem));
+        const ct = new Set(words(hit.content.toLowerCase()).map(stem));
         if (qt.size) {
           let inter = 0;
           for (const t of qt) if (ct.has(t)) inter++;
@@ -978,6 +993,26 @@ export function claimsFromCitations(answer: string, hits: Hit[]): any[] {
     });
   }
   return claims;
+}
+
+/**
+ * Fraction of answer sentences that carry a citation marker. This is the one
+ * grounding signal that is honest and cheap: `verifyClaims` only proves a quote
+ * was copied from the passage it points at (true by construction, since we copy
+ * the quote ourselves), so a 1.0 there says nothing. Sentence coverage asks the
+ * question a reader actually cares about - how much of the prose is tied to a
+ * source - and it is low for a fluent answer that cites once, high for one that
+ * cites per claim.
+ */
+export function citationCoverage(answer: string): number {
+  const normalized = normalizeCitationMarkers(answer || "");
+  const sentences = normalized
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((s) => s.replace(/[#*`>|]/g, " ").trim())
+    .filter((s) => s.replace(/\W/g, "").length >= 24);
+  if (!sentences.length) return 0;
+  const cited = sentences.filter((s) => /\[\d+\]/.test(s)).length;
+  return cited / sentences.length;
 }
 
 const STOPWORDS = new Set([

@@ -34,9 +34,19 @@ Team Astro-Tech is four people:
   came from.
 - A ranking page that shows the score behind every passage instead of hiding it.
 - A comparison page for two campaigns, condition by condition.
+- **Mission Relevance**: pick a habitable crew environment (spacecraft cabin, EVA
+  spacesuit, lunar/Martian habitat, pressurized rover) and see which microgravity
+  investigations matter most for it, ranked by a transparent, hand-checkable rubric.
+  - A "named investigations" panel that separates two cases rather than blurring them: the
+  challenge-named investigations that **are** in PSI (SPICE, SLICE, DAFT-2, BRE, E-FIELD,
+  CFI-G, each with its PSI id) and the ones the corpus genuinely does **not** hold yet
+  (LUCI, FM2), so the gap is visible without overstating it.
 - Fire-safety insights the SI core writes from the retrieved evidence, each one linked to
   the documents it came from.
-- A React dashboard over all of it, in ten languages including right-to-left Arabic.
+- A React dashboard in ten languages including right-to-left Arabic. English is the source
+  language and Arabic is hand-written in full; the other eight locales are bundled
+  translations that cover the common UI and fall back to the source string (or a machine
+  pass) for anything they do not yet carry, rather than rendering a blank label.
 
 ## How it works
 
@@ -71,23 +81,41 @@ What is model-generated:
   Each card is labelled and links to the documents it drew on.
 - **The LAVA wordmark.** The logo image was produced with an image-generation tool.
 
-The models are reached through one gateway, and each public name maps to a concrete
-upstream model. The registry lives in `workers/lava-gateway/worker.js`.
+The models are reached through one gateway (`workers/lava-gateway/worker.js`). The
+UI shows a stable LAVA codename per slot so the picker never breaks when a
+backend changes. What each codename actually calls is one of two kinds of thing:
 
-| Shown in the UI | Upstream model | Provider |
+- **Direct, named open models.** SI PULSE / SI PULSE LITE call Groq's
+  `openai/gpt-oss-120b` and `openai/gpt-oss-20b`; SI EMBER calls Cloudflare
+  Workers AI's `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. These names are real
+  and checkable against the providers' public model lists.
+- **Aggregator-routed slots.** The SI flagship and SI NOVA slots send a model
+  string to AgentRouter, a third-party aggregator. The string we send
+  (`gpt-5.6-sol`, `gpt-6.1-sol`, `gpt-6-astra`, `gemini-3.6-flash`,
+  `gemini-3.5-flash`) is a routing alias, **not** a verified public model id -
+  we do not control which upstream the aggregator serves, and these strings are
+  not published model names. Treat the codename, not the alias, as what the UI
+  promises; the gateway walks a documented fallback chain when a slot fails.
+
+| Shown in the UI | Gateway target | Route |
 | --- | --- | --- |
-| SI 1 | `gpt-5.6-sol` | agentrouter |
-| SI MAX | `gpt-6.1-sol` | agentrouter |
-| SI ULTRA | `gpt-6-astra` | agentrouter |
-| SI NOVA | `gemini-3.6-flash` | Google |
-| SI NOVA LITE | `gemini-3.5-flash` | Google |
+| SI 1 | routing alias `gpt-5.6-sol` | AgentRouter (aggregator) |
+| SI MAX | routing alias `gpt-6.1-sol` | AgentRouter (aggregator) |
+| SI ULTRA | routing alias `gpt-6-astra` | AgentRouter (aggregator) |
+| SI NOVA | routing alias `gemini-3.6-flash` | AgentRouter (aggregator) |
+| SI NOVA LITE | routing alias `gemini-3.5-flash` | AgentRouter (aggregator) |
 | SI PULSE | `openai/gpt-oss-120b` | Groq |
 | SI PULSE LITE | `openai/gpt-oss-20b` | Groq |
-| SI EMBER | `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | Cloudflare |
+| SI EMBER | `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | Cloudflare Workers AI |
 
 "SI" is the name of our model layer in this project; it is not a NASA programme and
 carries no NASA endorsement. Anything a model writes here is a draft for a human to
 check, not a verified finding, and the interface says so next to the numbers.
+
+The interface reports **citation coverage** - the share of an answer's sentences
+that carry a source marker - rather than a "confidence in correctness", which we
+cannot compute honestly. A high coverage means most sentences are tied to a
+retrieved passage; it is not a claim that the passage is correct.
 
 ## Tech stack
 
@@ -148,9 +176,18 @@ npx playwright test        # defaults to the deployed URL; set BASE_URL to point
 ### Embeddings
 
 `index` embeds every chunk with `fastembed` and stores a 384-dimensional vector
-next to the text in `pgvector`. Coverage is complete: the current corpus is 352
-documents, 10,066 chunks, and 10,066 stored vectors, so no chunk is left
-unsearchable. The count comes from `data/manifests/analysis.json`.
+next to the text in `pgvector`. The pipeline is designed to cover every chunk,
+but the deployed worker also embeds through a hosted backend that can be rate
+limited or out of quota, so live vector coverage can be partial. The live
+`/api/health` reports both counts and a derived `embedding_coverage` ratio;
+`vectors_complete` is `true` only when every chunk has a vector. When coverage is
+below 1, retrieval still works: the vector search is fused with the keyword
+search and falls back to lexical-only rather than failing.
+
+The build-time corpus counts come from `data/manifests/analysis.json`; the live
+counts come from the `ignis.document_stats` view. They are not expected to be
+identical, because the corpus can be re-indexed after the manifest is written -
+treat `/api/health` as the source of truth for what is deployed.
 
 ## Things that were hard
 
@@ -188,8 +225,10 @@ unsearchable. The count comes from `data/manifests/analysis.json`.
 ## NASA Data and Resources
 
 Everything comes from the NASA Technical Reports Server (NTRS) public API. We harvested
-376 documents, about 2.6M words, across the microgravity combustion campaigns: BASS-II,
-SAFFIRE, SAME, FLEX-2, ACME, CFI and SoFIE. Documents are deduplicated by content hash and
+documents across the microgravity combustion campaigns: BASS-II, SAFFIRE, SAME, FLEX-2,
+ACME, CFI and SoFIE. The live document count is whatever `/api/health` reports (the
+`ignis.document_stats` view); the exact figure moves as the corpus is re-indexed, so we do
+not quote a frozen number here. Documents are deduplicated by content hash and
 we prefer the NTRS full text over our own PDF parsing because it is cleaner. Numbers
 pulled from the documents are candidates for review, not ground truth, and the interface
 labels them that way.
@@ -216,8 +255,8 @@ How we access it:
 
 ## References and Credits
 
-- Fonts: Manrope and IBM Plex Sans Arabic, served from Google Fonts under the SIL Open
-  Font License.
+- Fonts: Orbitron (English display/hero), Manrope (English body), and IBM Plex Sans
+  Arabic (all Arabic text), served from Google Fonts under the SIL Open Font License.
 - Icons: drawn in-house as inline SVG in `web/src/components/Icon.tsx`; no third-party icon
   set.
 - Space imagery and the Earth video under `web/public/assets/`: placeholder art from the

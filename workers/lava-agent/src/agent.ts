@@ -18,7 +18,7 @@ import { runAgentLoop } from "./agentic";
 import { renderSvg } from "./viz";
 import type { ChartSpec } from "./export";
 import {
-  attributeClaims, normalizeCitationMarkers, expandQuery, heuristicGrade, mmrDiversify, retrieveGraded,
+  attributeClaims, citationCoverage, normalizeCitationMarkers, expandQuery, heuristicGrade, mmrDiversify, retrieveGraded,
   rerank, siRerank, smartRank, synthesizeExtractive, verifyClaims, type Hit,
 } from "./retrieval";
 import { memoryRecall, memoryWrite, persistSession } from "./memory";
@@ -92,8 +92,13 @@ async function synthesizeWithLLM(env: Env, question: string, hits: Hit[],
       if (!answer) throw new Error("empty answer");
       const { claims, answer: withMarkers } = attributeClaims(answer, hits);
       const attributed = claims.some((c) => c.attributed);
-      const base = claims.length ? Math.min(0.95, 0.62 + 0.08 * claims.length) : 0.2;
-      return { answer: withMarkers, claims, confidence: attributed ? base * 0.85 : base };
+      // The base is how many distinct passages were cited (capped); the coverage
+      // term pulls it down when most sentences are uncited, so a fluent but
+      // thinly-sourced answer cannot score 0.9.
+      const cited = claims.length;
+      const coverage = citationCoverage(withMarkers);
+      const base = cited ? Math.min(0.9, 0.4 + 0.06 * cited) * (0.5 + 0.5 * coverage) : 0.2;
+      return { answer: withMarkers, claims, confidence: attributed ? base * 0.9 : base };
     } catch (err: any) {
       lastErr = err;
       log("synth_attempt_failed", { budget, message: String(err?.message ?? err).slice(0, 200) });
@@ -328,9 +333,10 @@ export async function runAgent(
   const synth = await synthesizeWithLLM(env, rq, relevant, subs, usedModel);
   const hitsByChunk = new Map(relevant.map((h) => [h.chunk_id, h]));
   const verified = verifyClaims(synth.claims, hitsByChunk);
-  const confidence = Math.round(Math.min(0.95, 0.55 * synth.confidence + 0.45 * verified.ratio) * 1000) / 1000;
+  const coverage = citationCoverage(synth.answer);
+  const confidence = Math.round(Math.min(0.9, 0.45 * synth.confidence + 0.55 * coverage) * 1000) / 1000;
   step("synthesize", { provider: "lava-agent", model: usedModel, claims: verified.claims.length });
-  step("verify", { verified_ratio: Number(verified.ratio.toFixed(3)), claims: verified.claims.length });
+  step("verify", { verified_ratio: Number(verified.ratio.toFixed(3)), coverage: Number(coverage.toFixed(3)), claims: verified.claims.length });
 
   let chart: any = null;
   let answer = normalizeCitationMarkers(synth.answer);
@@ -367,7 +373,7 @@ export async function runAgent(
     evidence: relevant.map((h) => ({ ...h })),
     sub_questions: subs,
     confidence,
-    grounded: Boolean(verified.claims.length) && verified.ratio > 0.3,
+    grounded: Boolean(verified.claims.length) && coverage > 0.4,
     iterations: 1,
     provider: "lava-agent",
     model: usedModel,
@@ -512,9 +518,14 @@ export async function runAgentic(
     loop.stopReason === "deadline" ? 0.45 :
     loop.stopReason === "synth_failed" ? 0.3 :
     0.3;
+  const coverage = citationCoverage(answer);
+  // Coverage replaces the old 0.65 weight on verifiedRatio, which was always ~1
+  // (claims are copied quotes) and so made confidence near-constant. Coverage
+  // moves with how much of the prose is actually cited, and `grounded` is stated
+  // separately for a human to judge.
   const confidence = Math.round(
-    Math.min(0.95, 0.35 * modelConfidence + 0.65 * verifiedRatio) *
-    (claims.claims.some((c) => c.attributed) ? 0.88 : 1) * 1000) / 1000;
+    Math.min(0.9, 0.45 * modelConfidence + 0.55 * coverage) *
+    (claims.claims.some((c) => c.attributed) ? 0.9 : 1) * 1000) / 1000;
 
   const result = {
     run_id: runId,
@@ -526,7 +537,7 @@ export async function runAgentic(
     sub_questions: loop.steps.filter((s) => s.tool === "search_corpus")
       .map((s) => String(s.input?.query ?? "")).filter(Boolean),
     confidence,
-    grounded: Boolean(claims.claims.length) && verifiedRatio > 0.3,
+    grounded: Boolean(claims.claims.length) && coverage > 0.4,
     iterations: loop.iterations,
     stop_reason: loop.stopReason,
     provider: "lava-agent",

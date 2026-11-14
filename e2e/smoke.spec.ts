@@ -12,6 +12,7 @@ const CONTENT_ROUTES = [
   "/insights",
   "/search",
   "/coverage",
+  "/relevance",
   "/datasets",
   "/explorer",
   "/rank",
@@ -74,4 +75,35 @@ test("images carry alt text", async ({ page }) => {
   for (const img of imgs) {
     expect(await img.getAttribute("alt"), "an image has no alt attribute").not.toBeNull();
   }
+});
+
+/**
+ * The typography is a brand decision, not a detail: the English landing header
+ * is set in Orbitron and every Arabic surface falls back to IBM Plex Sans
+ * Arabic. Both are easy to lose to a stray `font-family` rule or a dropped
+ * token, so pin the computed result on the live build.
+ */
+test("the English landing header uses Orbitron", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("lava.lang", JSON.stringify("en")));
+  await page.reload();
+  const navFont = await page
+    .locator(".nav-in")
+    .evaluate((el) => getComputedStyle(el).fontFamily);
+  expect(navFont).toContain("Orbitron");
+});
+
+test("Arabic surfaces use IBM Plex Sans Arabic", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("lava.lang", JSON.stringify("ar")));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  const navFont = await page
+    .locator(".nav-in")
+    .evaluate((el) => getComputedStyle(el).fontFamily);
+  const bodyFont = await page
+    .locator("body")
+    .evaluate((el) => getComputedStyle(el).fontFamily);
+  expect(navFont).toContain("IBM Plex Sans Arabic");
+  expect(bodyFont).toContain("IBM Plex Sans Arabic");
 });

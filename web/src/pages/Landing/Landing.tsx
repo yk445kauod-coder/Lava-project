@@ -47,7 +47,12 @@ const STEPS = [
   { n: "3", b: "Ask and cite", p: "Ask a question in your own language and get an answer with the exact passage behind it." },
 ];
 
-interface Health { stats?: { documents?: unknown; chunks?: unknown; findings?: unknown; experiments?: unknown } }
+interface Health {
+  stats?: {
+    documents?: unknown; chunks?: unknown; findings?: unknown; experiments?: unknown;
+    embeddings?: unknown; embedding_coverage?: unknown; vectors_complete?: unknown;
+  };
+}
 interface Insight { title?: string; severity?: string; category?: string; supporting_documents?: unknown[] }
 
 /** Counts a number up once on mount; falls back to the final value when motion
@@ -162,6 +167,12 @@ function LiveSnapshot() {
         <div className="live-cell"><b><CountUp value={s.findings} /></b><span>{t("findings")}</span></div>
         <div className="live-cell"><b><CountUp value={s.experiments} /></b><span>{t("experiments")}</span></div>
       </div>
+      {s.vectors_complete === false && (
+        <p className="live-coverage small muted">
+          {t("Vector index covers {n}% of passages; search fuses keyword matching so every passage stays reachable.")
+            .replace("{n}", String(Math.round((Number(s.embedding_coverage) || 0) * 100)))}
+        </p>
+      )}
       <div className="live-find">
         {insight ? (
           <>

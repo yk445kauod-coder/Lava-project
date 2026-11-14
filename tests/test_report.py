@@ -16,7 +16,7 @@ QUESTIONS = ["How does flame spread differ in microgravity?",
 
 
 @pytest.fixture(scope="module")
-def built():
+def built(db_or_skip):
     """One real report over the live corpus, deterministic (no LLM)."""
     return report_mod.build_report("fire suppression in microgravity",
                                    QUESTIONS, k=4, use_llm=False)

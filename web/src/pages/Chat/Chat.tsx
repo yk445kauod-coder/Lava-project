@@ -203,7 +203,10 @@ function AiMessage({ result, onToast }: { result: AskResult; onToast: (m: string
           <span className={`dot${grounded ? "" : " warn"}`} />
           {grounded ? t("grounded in sources") : t("low grounding")}
           {partial && <> · {t("partial")} · {t(STOP_LABEL[result.stop_reason ?? ""] || result.stop_reason || "")}</>}
-          {" · "}{t("confidence")} {Math.round((Number(result.confidence) || 0) * 100)}%
+          {" · "}
+          <span title={t("Share of the answer's sentences that carry a source citation, not a confidence in correctness.")}>
+            {t("citation coverage")} {Math.round((Number(result.confidence) || 0) * 100)}%
+          </span>
           {" · "}{claims.length} {t("cited claims")}
           {" · "}{evidence.length} {t("passages")}
           {" · "}{((Number(result.latency_ms) || 0) / 1000).toFixed(1)}s

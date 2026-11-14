@@ -33,6 +33,7 @@ export const NAV: NavGroup[] = [
     items: [
       { id: "chat", href: "/chat", icon: "comments", label: "LAVA Intelligence" },
       { id: "reports", href: "/reports", icon: "file", label: "Research Briefs" },
+      { id: "relevance", href: "/relevance", icon: "telescope", label: "Mission Relevance" },
       { id: "insights", href: "/insights", icon: "bolt", label: "Fire-Safety Insights" },
       { id: "rank", href: "/rank", icon: "rank", label: "Smart Ranking" },
       { id: "compare", href: "/compare", icon: "compare", label: "Comparative Analysis" },

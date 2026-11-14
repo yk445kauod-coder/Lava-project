@@ -21,7 +21,7 @@
  * ./i18n, ./sse, and ./serialize. Every response goes through ./http so CORS,
  * the error envelope, and logging stay identical across endpoints.
  */
-import type { Env } from "./db";
+import { db, type Env } from "./db";
 import { CORS, errorResponse, log, newRequestId } from "./http";
 import { currentUser } from "./auth";
 import { handleDataRoutes } from "./routes/data";
@@ -118,6 +118,24 @@ export default {
       const response = errorResponse(err, requestId, url.pathname);
       response.headers.set("x-request-id", requestId);
       return response;
+    }
+  },
+
+  /**
+   * Cron warm-up. Neon suspends an idle database after a few minutes, so the
+   * first real request after a quiet stretch pays the resume cost (multi-second
+   * `/api/search`, `/api/health`). A cheap aggregate read every few minutes
+   * keeps the compute awake so reviewers do not hit a cold start. Failures are
+   * logged and swallowed - a missed warm-up must never surface to a user.
+   */
+  async scheduled(_event: ScheduledController, env: Env): Promise<void> {
+    const started = Date.now();
+    try {
+      const sql = db(env);
+      await sql`SELECT count(*) FROM ignis.document_stats`;
+      log("warmup", { ok: true, ms: Date.now() - started });
+    } catch (err: any) {
+      log("warmup", { ok: false, ms: Date.now() - started, message: String(err?.message ?? err).slice(0, 200) });
     }
   },
 };

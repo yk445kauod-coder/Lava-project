@@ -26,6 +26,19 @@ const STATS_KEYS = [
 /** Cap on rows returned for any one PSI table (largest fetched table is 469). */
 const PSI_ROW_LIMIT = 500;
 
+/**
+ * Derive the vector-coverage ratio the UI reports, so the number is computed
+ * from the live counts rather than asserted. Vector indexing depends on an
+ * embedding backend that can be rate-limited or out of quota, so coverage is
+ * expected to be below 1 and the UI must be able to say so honestly.
+ */
+function embeddingCoverage(stats: any): { embedding_coverage: number; vectors_complete: boolean } {
+  const chunks = Number(stats?.chunks ?? 0);
+  const embeddings = Number(stats?.embeddings ?? 0);
+  const ratio = chunks > 0 ? Math.min(1, embeddings / chunks) : 0;
+  return { embedding_coverage: Math.round(ratio * 1000) / 1000, vectors_complete: chunks > 0 && embeddings >= chunks };
+}
+
 /** Every PSI publication the experiment links to, with its tables and rows. */
 async function psiForExperiment(sql: any, experiment: any) {
   const links: any[] = await sql`SELECT investigation_id, relation FROM ignis.psi_experiment_link WHERE experiment_id = ${experiment.id}`;
@@ -85,12 +98,13 @@ export async function handleDataRoutes(request: Request, url: URL, env: Env): Pr
     try {
       const sql = db(env);
       const rows: any[] = await sql`SELECT * FROM ignis.document_stats`;
+      const stats = numifyOne(rows[0], STATS_KEYS);
       return json({
         status: "ok",
         backend: "live-worker",
         server_time: new Date().toISOString(),
         latency_ms: Date.now() - started,
-        stats: numifyOne(rows[0], STATS_KEYS),
+        stats: { ...stats, ...embeddingCoverage(stats) },
       });
     } catch {
       return json({ status: "error", backend: "live-worker" }, 503);

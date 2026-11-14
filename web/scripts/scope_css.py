@@ -44,10 +44,17 @@ def split_top(body):
 
 GLOBAL_TOKENS = {"html", "body", ":root", "*"}
 
+# Attribute selectors that live on <html> itself, so they must stay in front of
+# the scope: `[dir=rtl] .tbl th` describes the document direction, not a
+# descendant. Scoping them (`[dir=rtl] .console .tbl th` or, worse,
+# `.console [dir=rtl] .tbl th`) makes the whole RTL block unreachable, since no
+# element inside the page carries `dir` - it is set once on <html>.
+HTML_ATTR_PREFIXES = ("[data-theme", "[dir")
+
 
 def _is_global_prefix(tok):
     t = tok.lower()
-    return t in GLOBAL_TOKENS or t.startswith("[data-theme")
+    return t in GLOBAL_TOKENS or t.startswith(HTML_ATTR_PREFIXES)
 
 
 def scope_selector(sel, scope, dropped):
