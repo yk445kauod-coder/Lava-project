@@ -307,6 +307,19 @@ describe("citationCoverage", () => {
     expect(citationCoverage(a)).toBeCloseTo(0.5, 5);
   });
 
+  test("counts a marker that trails the sentence terminator", () => {
+    // Models write "...fire safety. [1][3]" as often as "...safety [1][3].".
+    // Splitting first stranded the markers in a dropped fragment, so a fully
+    // sourced answer scored 0 and came back grounded:false.
+    const a = "FLEX studies fuel-droplet combustion and flame extinguishment in microgravity. [1][3]";
+    expect(citationCoverage(a)).toBe(1);
+  });
+
+  test("still counts an uncited sentence beside a trailing-marker sentence", () => {
+    const a = "Flame spread slows in microgravity. [1] This second sentence carries no source at all.";
+    expect(citationCoverage(a)).toBeCloseTo(0.5, 5);
+  });
+
   test("ignores headings and short fragments that are not sentences", () => {
     const a = "# Fire safety\n\nFlame spread slows in microgravity [1].";
     expect(citationCoverage(a)).toBe(1);

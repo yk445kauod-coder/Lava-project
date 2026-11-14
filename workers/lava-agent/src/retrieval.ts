@@ -1029,7 +1029,15 @@ export function evidenceStrength(hits: Hit[]): number {
  * cites per claim.
  */
 export function citationCoverage(answer: string): number {
-  const normalized = normalizeCitationMarkers(answer || "");
+  // Models habitually close a sentence and *then* cite it ("...fire safety.
+  // [1][3]"). Splitting on the sentence boundary first would strand those
+  // markers in a fragment too short to count, so the sentence they belong to
+  // reads as uncited and a properly sourced answer scores 0. Pull a trailing
+  // marker group back in front of the terminator before splitting.
+  const normalized = normalizeCitationMarkers(answer || "").replace(
+    /([.!?])(\s*(?:\[\d+\])+)/g,
+    "$2$1",
+  );
   const sentences = normalized
     .split(/(?<=[.!?])\s+|\n+/)
     .map((s) => s.replace(/[#*`>|]/g, " ").trim())
