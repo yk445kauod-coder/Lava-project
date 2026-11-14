@@ -18,7 +18,7 @@ import { runAgentLoop } from "./agentic";
 import { renderSvg } from "./viz";
 import type { ChartSpec } from "./export";
 import {
-  attributeClaims, citationCoverage, normalizeCitationMarkers, expandQuery, heuristicGrade, mmrDiversify, retrieveGraded,
+  attributeClaims, citationCoverage, evidenceStrength, normalizeCitationMarkers, expandQuery, heuristicGrade, mmrDiversify, retrieveGraded,
   rerank, siRerank, smartRank, synthesizeExtractive, verifyClaims, type Hit,
 } from "./retrieval";
 import { memoryRecall, memoryWrite, persistSession } from "./memory";
@@ -334,7 +334,7 @@ export async function runAgent(
   const hitsByChunk = new Map(relevant.map((h) => [h.chunk_id, h]));
   const verified = verifyClaims(synth.claims, hitsByChunk);
   const coverage = citationCoverage(synth.answer);
-  const confidence = Math.round(Math.min(0.9, 0.45 * synth.confidence + 0.55 * coverage) * 1000) / 1000;
+  const confidence = Math.round(Math.min(0.9, 0.45 * synth.confidence + 0.55 * coverage) * evidenceStrength(relevant) * 1000) / 1000;
   step("synthesize", { provider: "lava-agent", model: usedModel, claims: verified.claims.length });
   step("verify", { verified_ratio: Number(verified.ratio.toFixed(3)), coverage: Number(coverage.toFixed(3)), claims: verified.claims.length });
 
@@ -522,9 +522,12 @@ export async function runAgentic(
   // Coverage replaces the old 0.65 weight on verifiedRatio, which was always ~1
   // (claims are copied quotes) and so made confidence near-constant. Coverage
   // moves with how much of the prose is actually cited, and `grounded` is stated
-  // separately for a human to judge.
+  // separately for a human to judge. evidenceStrength scales the result down
+  // when the top passages only loosely match, so an out-of-scope question does
+  // not come back with a confident number.
   const confidence = Math.round(
     Math.min(0.9, 0.45 * modelConfidence + 0.55 * coverage) *
+    evidenceStrength(relevant) *
     (claims.claims.some((c) => c.attributed) ? 0.9 : 1) * 1000) / 1000;
 
   const result = {

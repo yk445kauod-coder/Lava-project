@@ -11,7 +11,7 @@ import { describe, expect, test } from "vitest";
 import {
   RANK_WEIGHTS, buildTsQuery, citationCoverage, expandTokens, heuristicGrade, mmrDiversify,
   normalizeFusion, queryBigrams, queryTerms, queryTokens, relevanceGate, rerank,
-  applySiScores, capPsiShare, smartRank, stem, verifyClaims, type Hit,
+  applySiScores, capPsiShare, evidenceStrength, smartRank, stem, verifyClaims, type Hit,
 } from "../src/retrieval";
 
 function hit(id: number, content: string, opts: Partial<Hit> = {}): Hit {
@@ -343,5 +343,32 @@ describe("verifyClaims (provenance, not entailment)", () => {
     const claims = [{ chunk_id: 1, quote: "flame oxygen concentration extinction percent lowered" }];
     const { ratio } = verifyClaims(claims, map());
     expect(ratio).toBe(1);
+  });
+});
+
+describe("evidenceStrength", () => {
+  test("returns 1 when no passage carries an SI score", () => {
+    // The reranker is optional; with no scores confidence must not be dampened.
+    expect(evidenceStrength([hit(1, "a"), hit(2, "b")])).toBe(1);
+  });
+
+  test("a strongly reranked set keeps confidence near full", () => {
+    const strong = [hit(1, "a", { si_score: 0.55 }), hit(2, "b", { si_score: 0.5 })];
+    expect(evidenceStrength(strong)).toBeGreaterThan(0.9);
+  });
+
+  test("an off-topic set is dampened to the floor", () => {
+    // "best chocolate cake recipe" reranks every passage at ~0.125; confidence
+    // must fall, not sit at 0.9.
+    const weak = [hit(1, "a", { si_score: 0.125 }), hit(2, "b", { si_score: 0.125 })];
+    expect(evidenceStrength(weak)).toBe(0.4);
+  });
+
+  test("stays inside [0.4, 1]", () => {
+    for (const s of [0, 0.01, 0.5, 1, 2]) {
+      const v = evidenceStrength([hit(1, "a", { si_score: s })]);
+      expect(v).toBeGreaterThanOrEqual(0.4);
+      expect(v).toBeLessThanOrEqual(1);
+    }
   });
 });
